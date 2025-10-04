@@ -28,7 +28,6 @@ public class CraftGuide
 	public static CraftGuideSide side;
 	public static CraftGuideLoaderSide loaderSide;
 
-	public static ItemCraftGuide itemCraftGuide;
 	private static Properties config = new Properties();
 
 	private static Map<String, String> configComments;
@@ -53,6 +52,8 @@ public class CraftGuide
 	public static boolean useWorkerThread = true;
 
 	public static final int DAMAGE_WILDCARD = 32767;
+
+    public static ItemCraftGuide itemCraftGuide = (ItemCraftGuide) ModItems.CRAFT_GUIDE;
 
 	public void preInit(boolean disableItem)
 	{
@@ -138,18 +139,16 @@ public class CraftGuide
 		}
 	}
 
-	private void addItem()
-	{
-		itemCraftGuide = new ItemCraftGuide();
-
-		if(enableItemRecipe)
-		{
-			loaderSide.addRecipe(new ItemStack(itemCraftGuide), new Object[] {"pbp",
-					"bcb", "pbp", Character.valueOf('c'), Blocks.CRAFTING_TABLE,
-					Character.valueOf('p'), Items.PAPER, Character.valueOf('b'),
-					Items.BOOK});
-		}
-	}
+    private void addItem()
+    {
+        if(enableItemRecipe)
+        {
+            loaderSide.addRecipe(new ItemStack(itemCraftGuide), new Object[] {"pbp",
+                    "bcb", "pbp", Character.valueOf('c'), Blocks.CRAFTING_TABLE,
+                    Character.valueOf('p'), Items.PAPER, Character.valueOf('b'),
+                    Items.BOOK});
+        }
+    }
 
 	static
 	{

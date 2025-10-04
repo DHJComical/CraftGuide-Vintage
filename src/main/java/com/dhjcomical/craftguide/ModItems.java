@@ -11,4 +11,7 @@ public class ModItems {
 
     public static final Item CRAFT_GUIDE = new ItemCraftGuide();
 
+    static {
+        ITEMS.add(CRAFT_GUIDE);
+    }
 }
