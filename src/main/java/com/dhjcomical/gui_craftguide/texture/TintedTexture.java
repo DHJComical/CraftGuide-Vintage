@@ -1,0 +1,32 @@
+package com.dhjcomical.gui_craftguide.texture;
+
+import com.dhjcomical.gui_craftguide.Color;
+import com.dhjcomical.gui_craftguide.editor.TextureMeta;
+import com.dhjcomical.gui_craftguide.editor.TextureMeta.TextureParameter;
+import com.dhjcomical.gui_craftguide.rendering.RendererBase;
+
+@TextureMeta(name = "coloredtexture")
+public class TintedTexture implements Texture
+{
+	@TextureParameter
+	public Texture source;
+
+	@TextureParameter
+	public Color color;
+
+	private float prev[] = new float[4];
+
+	@Override
+	public void renderRect(RendererBase renderer, int x, int y, int width, int height, int u, int v)
+	{
+		renderer.getColorModifierv(prev);
+		renderer.setColorModifier(
+				prev[0] * (color.red / 255.0f),
+				prev[1] * (color.green / 255.0f),
+				prev[2] * (color.blue / 255.0f),
+				prev[3] * (color.alpha / 255.0f));
+
+		source.renderRect(renderer, x, y, width, height, u, v);
+		renderer.setColorModifierv(prev);
+	}
+}

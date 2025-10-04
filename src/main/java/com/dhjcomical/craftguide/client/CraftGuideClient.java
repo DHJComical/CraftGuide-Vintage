@@ -1,0 +1,197 @@
+package com.dhjcomical.craftguide.client;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraftforge.client.model.ModelLoader;
+import com.dhjcomical.craftguide.CraftGuide;
+import com.dhjcomical.craftguide.CraftGuideLog;
+import com.dhjcomical.craftguide.CraftGuideSide;
+import com.dhjcomical.craftguide.GuiCraftGuide;
+import com.dhjcomical.craftguide.api.Util;
+import com.dhjcomical.craftguide.client.ui.GuiRenderer;
+import com.dhjcomical.gui_craftguide.rendering.RendererBase;
+import com.dhjcomical.gui_craftguide.texture.AnimatedTexture;
+import com.dhjcomical.gui_craftguide.texture.BlankTexture;
+import com.dhjcomical.gui_craftguide.texture.BorderedTexture;
+import com.dhjcomical.gui_craftguide.texture.MultipleTextures;
+import com.dhjcomical.gui_craftguide.texture.SolidColorTexture;
+import com.dhjcomical.gui_craftguide.texture.SubTexture;
+import com.dhjcomical.gui_craftguide.texture.TextureClip;
+import com.dhjcomical.gui_craftguide.texture.TintedTexture;
+import com.dhjcomical.gui_craftguide.theme.ThemeManager;
+
+public abstract class CraftGuideClient implements CraftGuideSide
+{
+	@Override
+	public void preInit()
+	{
+		RendererBase.instance = new GuiRenderer();
+		Util.instance = new UtilImplementationClient();
+		extractResources();
+
+		ThemeManager.addTextureType(SolidColorTexture.class);
+		ThemeManager.addTextureType(MultipleTextures.class);
+		ThemeManager.addTextureType(AnimatedTexture.class);
+		ThemeManager.addTextureType(BorderedTexture.class);
+		ThemeManager.addTextureType(TintedTexture.class);
+		ThemeManager.addTextureType(BlankTexture.class);
+		ThemeManager.addTextureType(TextureClip.class);
+		ThemeManager.addTextureType(SubTexture.class);
+
+
+		ThemeManager.instance.reload();
+
+		String themeName = readThemeChoice();
+		ThemeManager.currentTheme = ThemeManager.instance.buildTheme(themeName);
+		ThemeManager.currentThemeName = themeName;
+
+		if(ThemeManager.currentTheme == null)
+		{
+			ThemeManager.currentTheme = ThemeManager.instance.buildTheme("theme_base");
+			ThemeManager.currentThemeName = "theme_base";
+		}
+
+		ModelLoader.setCustomModelResourceLocation(CraftGuide.itemCraftGuide, 0,
+				new ModelResourceLocation("craftguide:craftguide_item", "inventory"));
+	}
+
+	private String readThemeChoice()
+	{
+		File dir = themeDirectory();
+
+		if(dir == null)
+		{
+			return "base_texpack";
+		}
+
+		File file = new File(dir, "currentTheme.txt");
+
+		if(!file.exists())
+		{
+			try
+			{
+				file.createNewFile();
+			}
+			catch(IOException e)
+			{
+				CraftGuideLog.log(e, "", true);
+			}
+
+			if(file.canWrite())
+			{
+				try(FileWriter writer = new FileWriter(file))
+				{
+					writer.write("base_texpack");
+				}
+				catch(IOException e)
+				{
+					CraftGuideLog.log(e, "", true);
+				}
+			}
+		}
+		else if(file.canRead())
+		{
+			try(BufferedReader reader = new BufferedReader(new FileReader(file)))
+			{
+				String line = reader.readLine();
+				return line;
+			}
+			catch(IOException e)
+			{
+				CraftGuideLog.log(e, "", true);
+			}
+		}
+
+		return "base_texpack";
+	}
+
+	@Override
+	public void reloadRecipes()
+	{
+		GuiCraftGuide.getInstance().reloadRecipes();
+	}
+
+	public static File themeDirectory()
+	{
+		File configDir = CraftGuide.configDirectory();
+
+		if(configDir == null)
+		{
+			return null;
+		}
+
+		File dir = new File(configDir, "themes");
+
+		if(!dir.exists() && !dir.mkdirs())
+		{
+			return null;
+		}
+
+		return dir;
+	}
+
+	private void extractResources()
+	{
+		File outputBase = themeDirectory();
+
+		if(outputBase == null)
+		{
+			return;
+		}
+
+		try(InputStream stream = this.getClass().getResourceAsStream("/CraftGuideResources.zip"))
+		{
+			if(stream != null)
+			{
+				try(ZipInputStream resources = new ZipInputStream(stream))
+				{
+					byte[] buffer = new byte[1024 * 16];
+					ZipEntry entry;
+					while((entry = resources.getNextEntry()) != null)
+					{
+						File destination = new File(outputBase, entry.getName());
+
+						if(entry.isDirectory())
+						{
+							destination.mkdirs();
+						}
+						else
+						{
+							CraftGuideLog.log("CraftGuide: Extracting '" + entry.getName() + "' to '" + destination.getCanonicalPath() + "'", false);
+							destination.getParentFile().mkdirs();
+							destination.createNewFile();
+							try(FileOutputStream output = new FileOutputStream(destination))
+							{
+								int len;
+
+								while((len = resources.read(buffer, 0, buffer.length)) != -1)
+								{
+									output.write(buffer, 0, len);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		catch(IOException e)
+		{
+			CraftGuideLog.log(e, "", true);
+		}
+	}
+
+	@Override
+	public void initNetworkChannels()
+	{
+		CraftGuide.loaderSide.initClientNetworkChannels();
+	}
+}

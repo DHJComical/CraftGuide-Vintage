@@ -1,0 +1,37 @@
+package com.dhjcomical.craftguide.client.ui;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.dhjcomical.craftguide.client.ui.GuiButton.ButtonState;
+import com.dhjcomical.gui_craftguide.texture.Texture;
+
+public class ButtonTemplate
+{
+	private Map<ButtonState, Texture> stateImages = new HashMap<>();
+
+	public ButtonTemplate(Texture[] images)
+	{
+		int i = 0;
+		for(ButtonState state: ButtonState.values())
+		{
+			setStateImage(state, images[i]);
+			i = Math.min(i + 1, images.length);
+		}
+	}
+
+	public ButtonTemplate()
+	{
+	}
+
+	public Texture getStateImage(ButtonState state)
+	{
+		return stateImages.get(state);
+	}
+
+	public ButtonTemplate setStateImage(ButtonState state, Texture image)
+	{
+		stateImages.put(state, image);
+		return this;
+	}
+}

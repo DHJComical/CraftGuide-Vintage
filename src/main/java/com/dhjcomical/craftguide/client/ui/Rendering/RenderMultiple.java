@@ -1,0 +1,31 @@
+package com.dhjcomical.craftguide.client.ui.Rendering;
+
+import com.dhjcomical.gui_craftguide.rendering.Renderable;
+import com.dhjcomical.gui_craftguide.rendering.RendererBase;
+
+public class RenderMultiple implements Renderable
+{
+	Renderable render[];
+	int x, y;
+	
+	public RenderMultiple(Renderable render[])
+	{
+		this(0, 0, render);
+	}
+	
+	public RenderMultiple(int x, int y, Renderable render[])
+	{
+		this.x = x;
+		this.y = y;
+		this.render = render;
+	}
+
+	@Override
+	public void render(RendererBase renderer, int x, int y)
+	{
+		for(Renderable renderable: render)
+		{
+			renderable.render(renderer, x + this.x, y + this.y);
+		}
+	}
+}
