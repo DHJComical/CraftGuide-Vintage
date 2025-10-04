@@ -1,21 +1,16 @@
-## TemplateDevEnv
-_For Kotlin see [TemplateDevEnvKt](https://github.com/CleanroomMC/TemplateDevEnvKt)_
+CraftGuide
+==========
 
-Template workspace for modding Minecraft 1.12.2. Licensed under MIT, it is made for public use.
+CraftGuide is a Minecraft mod started back in October 2011, with the intention of providing the functionality of Risugami's Recipe Book, but a user interface which could better handle the absurd number of recipes encountered when playing with certain mods.
 
-This template runs on Java 21! Currently utilizies **Gradle 8.12** + **[RetroFuturaGradle](https://github.com/GTNewHorizons/RetroFuturaGradle) 1.4.1** + **Forge 14.23.5.2847**.
+Since then, it has slowly developed features to enhance the main functionality, such as making the GUI resizable to comfortably handle screens of all sizes at all GUI scales, and adding an API so that other mods can display recipes which wouldn't normally be visible (such as those for machines, or custom implementations of IRecipe).
 
-With **coremod and mixin support** that is easy to configure.
 
-### Instructions:
+### Contributing
+If you want to contribute to CraftGuide, simply submit an issue or pull request.
 
-1. Click `use this template` at the top.
-2. Clone the repository that you have created with this template to your local machine.
-3. Make sure IDEA is using Java 21 for Gradle before you sync the project. Verify this by going to IDEA's `Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM`.
-4. Open the project folder in IDEA. When prompted, click "Load Gradle Project" as it detects the `build.gradle`, if you weren't prompted, right-click the project's `build.gradle` in IDEA, select `Link Gradle Project`, after completion, hit `Refresh All` in the gradle tab on the right.
-5. Run gradle tasks such as `runClient` and `runServer` in the IDEA gradle tab, or use the auto-imported run configurations like `1. Run Client`.
-
-### Notes:
-- Dependencies script in [gradle/scripts/dependencies.gradle](gradle/scripts/dependencies.gradle), explanations are commented in the file.
-- Publishing script in [gradle/scripts/publishing.gradle](gradle/scripts/publishing.gradle).
-- When writing Mixins on IntelliJ, it is advisable to use latest [MinecraftDev Fork for RetroFuturaGradle](https://github.com/eigenraven/MinecraftDev/releases).
+Things currently needed:
+- Translations to other languages
+- Advice on improving the project layout (including how to best credit contributors)
+- Advice on improving this README.md
+- Anything you are interested in working on
