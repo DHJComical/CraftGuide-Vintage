@@ -9,8 +9,10 @@ import java.util.Map;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.util.NonNullList;
 import com.dhjcomical.craftguide.api.CraftGuideRecipe;
 import com.dhjcomical.craftguide.api.RecipeGenerator;
 import com.dhjcomical.craftguide.api.RecipeTemplate;
@@ -27,242 +29,297 @@ import com.dhjcomical.gui_craftguide.texture.TextureClip;
 
 public class RecipeGeneratorImplementation implements RecipeGenerator
 {
-	private Map<ItemStack, List<CraftGuideRecipe>> recipes = new HashMap<>();
-	public List<ItemStack> disabledTypes = new LinkedList<>();
-	public Texture defaultBackground = new BlankTexture();
-	public Texture defaultBackgroundSelected;
-	public static ItemStack workbench = new ItemStack(Blocks.CRAFTING_TABLE);
-	public static final RecipeGeneratorImplementation instance = new RecipeGeneratorImplementation();
+    private Map<ItemStack, List<CraftGuideRecipe>> recipes = new HashMap<>();
+    public List<ItemStack> disabledTypes = new LinkedList<>();
+    public Texture defaultBackground = new BlankTexture();
+    public Texture defaultBackgroundSelected;
+    public static ItemStack workbench = new ItemStack(Blocks.CRAFTING_TABLE);
+    public static final RecipeGeneratorImplementation instance = new RecipeGeneratorImplementation();
 
-	private RecipeGeneratorImplementation()
-	{
-		Texture source = DynamicTexture.instance("base_image");
-		defaultBackgroundSelected = new BorderedTexture(
-				new Texture[]{
-						new TextureClip(source, 117,  1,  2, 2),
-						new SubTexture (source, 120,  1, 32, 2),
-						new TextureClip(source, 153,  1,  2, 2),
-						new SubTexture (source, 117,  4,  2, 32),
-						new SubTexture (source, 120,  4, 32, 32),
-						new SubTexture (source, 153,  4,  2, 32),
-						new TextureClip(source, 117, 37,  2, 2),
-						new SubTexture (source, 120, 37, 32, 2),
-						new TextureClip(source, 153, 37,  2, 2),
-				}, 2);
-	}
+    private RecipeGeneratorImplementation()
+    {
+        Texture source = DynamicTexture.instance("base_image");
+        defaultBackgroundSelected = new BorderedTexture(
+                new Texture[]{
+                        new TextureClip(source, 117,  1,  2, 2),
+                        new SubTexture (source, 120,  1, 32, 2),
+                        new TextureClip(source, 153,  1,  2, 2),
+                        new SubTexture (source, 117,  4,  2, 32),
+                        new SubTexture (source, 120,  4, 32, 32),
+                        new SubTexture (source, 153,  4,  2, 32),
+                        new TextureClip(source, 117, 37,  2, 2),
+                        new SubTexture (source, 120, 37, 32, 2),
+                        new TextureClip(source, 153, 37,  2, 2),
+                }, 2);
+    }
 
-	@Override
-	public RecipeTemplate createRecipeTemplate(Slot[] slots,
-			ItemStack craftingType, String backgroundTexture, int backgroundX,
-			int backgroundY, int backgroundSelectedX, int backgroundSelectedY)
-	{
-		return createRecipeTemplate(slots, craftingType,
-				backgroundTexture, backgroundX, backgroundY,
-				backgroundTexture, backgroundSelectedX, backgroundSelectedY);
-	}
+    @Override
+    public RecipeTemplate createRecipeTemplate(Slot[] slots,
+                                               ItemStack craftingType, String backgroundTexture, int backgroundX,
+                                               int backgroundY, int backgroundSelectedX, int backgroundSelectedY)
+    {
+        return createRecipeTemplate(slots, craftingType,
+                backgroundTexture, backgroundX, backgroundY,
+                backgroundTexture, backgroundSelectedX, backgroundSelectedY);
+    }
 
-	@Override
-	public RecipeTemplate createRecipeTemplate(Slot[] slots, ItemStack craftingType,
-			String backgroundTexture, int backgroundX, int backgroundY,
-			String backgroundSelectedTexture, int backgroundSelectedX, int backgroundSelectedY)
-	{
-		if(craftingType == null)
-		{
-			craftingType = workbench;
-		}
+    @Override
+    public RecipeTemplate createRecipeTemplate(Slot[] slots, ItemStack craftingType,
+                                               String backgroundTexture, int backgroundX, int backgroundY,
+                                               String backgroundSelectedTexture, int backgroundSelectedX, int backgroundSelectedY)
+    {
+        if(craftingType == null)
+        {
+            craftingType = workbench;
+        }
 
-		if(backgroundTexture.equals("/gui/BrewGuide.png"))
-		{
-			backgroundTexture = "craftguide:textures/gui/BrewGuide.png";
-		}
-		else if(backgroundTexture.equals("/gui/CraftGuide.png"))
-		{
-			backgroundTexture = "craftguide:textures/gui/CraftGuide.png";
-		}
-		else if(backgroundTexture.equals("/gui/CraftGuideRecipe.png"))
-		{
-			backgroundTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
-		}
+        if(backgroundTexture.equals("/gui/BrewGuide.png"))
+        {
+            backgroundTexture = "craftguide:textures/gui/BrewGuide.png";
+        }
+        else if(backgroundTexture.equals("/gui/CraftGuide.png"))
+        {
+            backgroundTexture = "craftguide:textures/gui/CraftGuide.png";
+        }
+        else if(backgroundTexture.equals("/gui/CraftGuideRecipe.png"))
+        {
+            backgroundTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
+        }
 
-		if(backgroundSelectedTexture.equals("/gui/BrewGuide.png"))
-		{
-			backgroundSelectedTexture = "craftguide:textures/gui/BrewGuide.png";
-		}
-		else if(backgroundSelectedTexture.equals("/gui/CraftGuide.png"))
-		{
-			backgroundSelectedTexture = "craftguide:textures/gui/CraftGuide.png";
-		}
-		else if(backgroundSelectedTexture.equals("/gui/CraftGuideRecipe.png"))
-		{
-			backgroundSelectedTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
-		}
+        if(backgroundSelectedTexture.equals("/gui/BrewGuide.png"))
+        {
+            backgroundSelectedTexture = "craftguide:textures/gui/BrewGuide.png";
+        }
+        else if(backgroundSelectedTexture.equals("/gui/CraftGuide.png"))
+        {
+            backgroundSelectedTexture = "craftguide:textures/gui/CraftGuide.png";
+        }
+        else if(backgroundSelectedTexture.equals("/gui/CraftGuideRecipe.png"))
+        {
+            backgroundSelectedTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
+        }
 
-		for(ItemStack stack: recipes.keySet())
-		{
-			if(ItemStack.areItemStacksEqual(stack, craftingType))
-			{
-				craftingType = stack;
-				break;
-			}
-		}
+        for(ItemStack stack: recipes.keySet())
+        {
+            if(ItemStack.areItemStacksEqual(stack, craftingType))
+            {
+                craftingType = stack;
+                break;
+            }
+        }
 
-		return new DefaultRecipeTemplate(
-				slots,
-				craftingType,
-				new TextureClip(
-						Image.fromJar(backgroundTexture),
-						backgroundX, backgroundY, 79, 58),
-				new TextureClip(
-						Image.fromJar(backgroundSelectedTexture),
-						backgroundSelectedX, backgroundSelectedY, 79, 58));
-	}
+        return new DefaultRecipeTemplate(
+                slots,
+                craftingType,
+                new TextureClip(
+                        Image.fromJar(backgroundTexture),
+                        backgroundX, backgroundY, 79, 58),
+                new TextureClip(
+                        Image.fromJar(backgroundSelectedTexture),
+                        backgroundSelectedX, backgroundSelectedY, 79, 58));
+    }
 
-	@Override
-	public RecipeTemplate createRecipeTemplate(Slot[] slots, ItemStack craftingType)
-	{
-		if(craftingType == null)
-		{
-			craftingType = workbench;
-		}
+    @Override
+    public RecipeTemplate createRecipeTemplate(Slot[] slots, ItemStack craftingType)
+    {
+        if(craftingType == null)
+        {
+            craftingType = workbench;
+        }
 
-		return new DefaultRecipeTemplate(slots, craftingType, defaultBackground, defaultBackgroundSelected);
-	}
+        return new DefaultRecipeTemplate(slots, craftingType, defaultBackground, defaultBackgroundSelected);
+    }
 
-	@Override
-	public void addRecipe(RecipeTemplate template, Object[] items)
-	{
-		addRecipe(template.generate(items), template.getCraftingType());
-	}
+    @Override
+    public void addRecipe(RecipeTemplate template, Object[] items)
+    {
+        addRecipe(template.generate(items), template.getCraftingType());
+    }
 
-	@Override
-	public void addRecipe(CraftGuideRecipe recipe, ItemStack craftingType)
-	{
-		List<CraftGuideRecipe> recipeList = recipes.get(craftingType);
+    @Override
+    public void addRecipe(CraftGuideRecipe recipe, ItemStack craftingType)
+    {
+        List<CraftGuideRecipe> recipeList = recipes.get(craftingType);
 
-		if(recipeList == null)
-		{
-			recipeList = new ArrayList<>();
-			recipes.put(craftingType, recipeList);
-		}
+        if(recipeList == null)
+        {
+            recipeList = new ArrayList<>();
+            recipes.put(craftingType, recipeList);
+        }
 
-		recipeList.add(recipe);
-	}
+        recipeList.add(recipe);
+    }
 
-	public Map<ItemStack, List<CraftGuideRecipe>> getRecipes()
-	{
-		return recipes;
-	}
+    public Map<ItemStack, List<CraftGuideRecipe>> getRecipes()
+    {
+        return recipes;
+    }
 
-	public void clearRecipes()
-	{
-		recipes.clear();
-	}
+    public void clearRecipes()
+    {
+        recipes.clear();
+    }
 
-	@Override
-	public void setDefaultTypeVisibility(ItemStack type, boolean visible)
-	{
-		if(visible)
-		{
-			disabledTypes.remove(type);
-		}
-		else if(!disabledTypes.contains(type))
-		{
-			disabledTypes.add(type);
-		}
-	}
+    @Override
+    public void setDefaultTypeVisibility(ItemStack type, boolean visible)
+    {
+        if(visible)
+        {
+            disabledTypes.remove(type);
+        }
+        else if(!disabledTypes.contains(type))
+        {
+            disabledTypes.add(type);
+        }
+    }
 
-	@Override
-	public Object[] getCraftingRecipe(IRecipe recipe)
-	{
-		return getCraftingRecipe(recipe, false);
-	}
+    @Override
+    public Object[] getCraftingRecipe(IRecipe recipe)
+    {
+        return getCraftingRecipe(recipe, false);
+    }
 
-	@Override
-	public Object[] getCraftingRecipe(IRecipe recipe, boolean allowSmallGrid)
-	{
-		try
-		{
-			if(recipe instanceof ShapedRecipes)
-			{
-				int width = (Integer)CommonUtilities.getPrivateValue(ShapedRecipes.class, (ShapedRecipes)recipe, "a", "recipeWidth", "field_77576_b");
-				int height = (Integer)CommonUtilities.getPrivateValue(ShapedRecipes.class, (ShapedRecipes)recipe, "b", "recipeHeight", "field_77577_c");
-				Object[] items = (Object[])CommonUtilities.getPrivateValue(ShapedRecipes.class, (ShapedRecipes)recipe, "c", "recipeItems", "field_77574_d");
+    @Override
+    public Object[] getCraftingRecipe(IRecipe recipe, boolean allowSmallGrid) {
+        try {
+            NonNullList<Ingredient> ingredients = recipe.getIngredients();
+            ItemStack output = recipe.getRecipeOutput();
 
-				if(allowSmallGrid && width < 3 && height < 3)
-				{
-					return getSmallShapedRecipe(width, height, items, ((ShapedRecipes)recipe).getRecipeOutput());
-				}
-				else
-				{
-					return getCraftingShapedRecipe(width, height, items, ((ShapedRecipes)recipe).getRecipeOutput());
-				}
-			}
-			else if(recipe instanceof ShapelessRecipes)
-			{
-				List<?> items = (List<?>)CommonUtilities.getPrivateValue(ShapelessRecipes.class, (ShapelessRecipes)recipe, "b", "recipeItems", "field_77579_b");
-				return getCraftingShapelessRecipe(items, ((ShapelessRecipes)recipe).getRecipeOutput());
-			}
-			else if(ForgeExtensions.matchesType(recipe))
-			{
-				return ForgeExtensions.getCraftingRecipe(this, recipe, allowSmallGrid);
-			}
-		}
-		catch(Exception e)
-		{
-			CraftGuideLog.log(e, "Exception while trying to parse an ItemStack[10] from an IRecipe:", true);
-		}
+            if (output.isEmpty()) {
+                return null;
+            }
 
-		return null;
-	}
+            if (recipe instanceof ShapedRecipes) {
+                ShapedRecipes shaped = (ShapedRecipes) recipe;
+                int width = shaped.getWidth();
+                int height = shaped.getHeight();
 
-	Object[] getSmallShapedRecipe(int width, int height, Object[] items, ItemStack recipeOutput)
-	{
-		Object[] output = new Object[5];
+                if (allowSmallGrid && width < 3 && height < 3) {
+                    return getSmallShapedRecipe(width, height, ingredients, output);
+                } else {
+                    return getCraftingShapedRecipe(width, height, ingredients, output);
+                }
+            } else if (recipe instanceof ShapelessRecipes) {
+                return getCraftingShapelessRecipe(ingredients, output);
+            } else {
+                return ForgeExtensions.getCraftingRecipe(this, recipe, allowSmallGrid);
+            }
+        } catch (Exception e) {
+            CraftGuideLog.log(e, "Exception while trying to parse an ItemStack[10] from an IRecipe:", true);
+        }
+        return null;
+    }
 
-		for(int y = 0; y < height; y++)
-		{
-			for(int x = 0; x < width; x++)
-			{
-				output[y * 2 + x] = items[y * width + x];
-			}
-		}
+    Object[] getSmallShapedRecipe(int width, int height, NonNullList<Ingredient> ingredients, ItemStack recipeOutput) {
+        Object[] output = new Object[5];
 
-		output[4] = recipeOutput;
-		return output;
-	}
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int index = y * width + x;
+                if (index < ingredients.size()) {
+                    Ingredient ingredient = ingredients.get(index);
+                    output[y * 2 + x] = convertIngredientToObject(ingredient);
+                }
+            }
+        }
 
-	Object[] getCraftingShapelessRecipe(List<?> items, ItemStack recipeOutput)
-	{
-		Object[] output = new Object[10];
+        output[4] = recipeOutput;
+        return output;
+    }
 
-		for(int i = 0; i < items.size(); i++)
-		{
-			output[i] = items.get(i);
-		}
+    Object[] getCraftingShapelessRecipe(NonNullList<Ingredient> ingredients, ItemStack recipeOutput) {
+        Object[] output = new Object[10];
 
-		output[9] = recipeOutput;
-		return output;
-	}
+        for (int i = 0; i < ingredients.size() && i < 9; i++) {
+            Ingredient ingredient = ingredients.get(i);
+            output[i] = convertIngredientToObject(ingredient);
+        }
 
-	Object[] getCraftingShapedRecipe(int width, int height, Object[] items, ItemStack recipeOutput)
-	{
-		Object[] output = new Object[10];
+        output[9] = recipeOutput;
+        return output;
+    }
 
-		for(int y = 0; y < height; y++)
-		{
-			for(int x = 0; x < width; x++)
-			{
-				output[y * 3 + x] = items[y * width + x];
-			}
-		}
+    Object[] getCraftingShapedRecipe(int width, int height, NonNullList<Ingredient> ingredients, ItemStack recipeOutput) {
+        Object[] output = new Object[10];
 
-		output[9] = recipeOutput;
-		return output;
-	}
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int index = y * width + x;
+                if (index < ingredients.size()) {
+                    Ingredient ingredient = ingredients.get(index);
+                    output[y * 3 + x] = convertIngredientToObject(ingredient);
+                }
+            }
+        }
 
-	@Override
-	public RecipeTemplateBuilder buildTemplate(ItemStack type)
-	{
-		return new RecipeTemplateBuilderImplementation(type);
-	}
+        output[9] = recipeOutput;
+        return output;
+    }
+
+    private Object convertIngredientToObject(Ingredient ingredient) {
+        if (ingredient == null || ingredient == Ingredient.EMPTY) {
+            return null;
+        }
+
+        ItemStack[] matchingStacks = ingredient.getMatchingStacks();
+        if (matchingStacks == null || matchingStacks.length == 0) {
+            return null;
+        }
+
+        List<ItemStack> validStacks = new ArrayList<>();
+        for (ItemStack stack : matchingStacks) {
+            if (stack != null && !stack.isEmpty()) {
+                validStacks.add(stack.copy());
+            }
+        }
+
+        if (validStacks.isEmpty()) {
+            return null;
+        }
+
+        if (validStacks.size() == 1) {
+            return validStacks.get(0);
+        }
+
+        return validStacks.toArray(new ItemStack[0]);
+    }
+
+    private Object convertOreIngredientToObject(Ingredient ingredient) {
+        if (ingredient == null || ingredient == Ingredient.EMPTY) {
+            return null;
+        }
+
+        ItemStack[] matchingStacks = ingredient.getMatchingStacks();
+        if (matchingStacks == null || matchingStacks.length == 0) {
+            return null;
+        }
+
+        if (matchingStacks.length > 1) {
+            List<ItemStack> validStacks = new ArrayList<>();
+            for (ItemStack stack : matchingStacks) {
+                if (stack != null && !stack.isEmpty() && stack.getItem() != null) {
+                    validStacks.add(stack.copy());
+                }
+            }
+
+            if (validStacks.isEmpty()) {
+                return null;
+            }
+
+            return validStacks.toArray(new ItemStack[0]);
+        } else if (matchingStacks.length == 1) {
+            ItemStack stack = matchingStacks[0];
+            if (stack != null && !stack.isEmpty() && stack.getItem() != null) {
+                return stack.copy();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public RecipeTemplateBuilder buildTemplate(ItemStack type)
+    {
+        return new RecipeTemplateBuilderImplementation(type);
+    }
 }

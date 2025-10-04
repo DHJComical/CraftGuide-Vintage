@@ -6,6 +6,8 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
@@ -19,112 +21,114 @@ import com.dhjcomical.craftguide.client.ui.text.TranslatedTextSource;
  */
 public class ForgeExtensionsImplementation extends ForgeExtensions
 {
-	private static final TranslatedTextSource emptyOreText =
-			new TranslatedTextSource("craftguide.gui.empty_oredict_type");
-	@Override
-	public boolean matchesTypeImpl(IRecipe recipe)
-	{
-		return recipe instanceof ShapedOreRecipe || recipe instanceof ShapelessOreRecipe;
-	}
+    private static final TranslatedTextSource emptyOreText =
+            new TranslatedTextSource("craftguide.gui.empty_oredict_type");
+    @Override
+    public boolean matchesTypeImpl(IRecipe recipe)
+    {
+        return recipe instanceof ShapedOreRecipe || recipe instanceof ShapelessOreRecipe;
+    }
 
-	@Override
-	public boolean isShapelessRecipeImpl(IRecipe recipe)
-	{
-		return recipe instanceof ShapelessOreRecipe;
-	}
+    @Override
+    public boolean isShapelessRecipeImpl(IRecipe recipe)
+    {
+        return recipe instanceof ShapelessOreRecipe;
+    }
 
-	@Override
-	public Object[] getCraftingRecipeImpl(RecipeGeneratorImplementation gen, IRecipe recipe, boolean allowSmallGrid)
-	{
-		try
-		{
-			if(recipe instanceof ShapedOreRecipe)
-			{
-				int width = (Integer)CommonUtilities.getPrivateValue(ShapedOreRecipe.class, (ShapedOreRecipe)recipe, "width");
-				int height = (Integer)CommonUtilities.getPrivateValue(ShapedOreRecipe.class, (ShapedOreRecipe)recipe, "height");
-				Object[] items = (Object[])CommonUtilities.getPrivateValue(ShapedOreRecipe.class, (ShapedOreRecipe)recipe, "input");
+    @Override
+    public Object[] getCraftingRecipeImpl(RecipeGeneratorImplementation gen, IRecipe recipe, boolean allowSmallGrid)
+    {
+        try
+        {
+            if(recipe instanceof ShapedOreRecipe)
+            {
+                ShapedOreRecipe shaped = (ShapedOreRecipe) recipe;
 
-				if(allowSmallGrid && width < 3 && height < 3)
-				{
-					return gen.getSmallShapedRecipe(width, height, items, ((ShapedOreRecipe)recipe).getRecipeOutput());
-				}
-				else
-				{
-					return gen.getCraftingShapedRecipe(width, height, items, ((ShapedOreRecipe)recipe).getRecipeOutput());
-				}
-			}
-			else if(recipe instanceof ShapelessOreRecipe)
-			{
-				List<?> items = (List<?>)CommonUtilities.getPrivateValue(ShapelessOreRecipe.class, (ShapelessOreRecipe)recipe, "input");
-				return gen.getCraftingShapelessRecipe(items, ((ShapelessOreRecipe)recipe).getRecipeOutput());
-			}
-		}
-		catch(SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e)
-		{
-			CraftGuideLog.log(e);
-		}
+                int width = shaped.getWidth();
+                int height = shaped.getHeight();
 
-		return null;
-	}
+                NonNullList<Ingredient> ingredients = shaped.getIngredients();
 
-	private IdentityHashMap<List<?>, String> mappingCache = new IdentityHashMap<>();
+                if(allowSmallGrid && width < 3 && height < 3)
+                {
+                    return gen.getSmallShapedRecipe(width, height, ingredients, shaped.getRecipeOutput());
+                }
+                else
+                {
+                    return gen.getCraftingShapedRecipe(width, height, ingredients, shaped.getRecipeOutput());
+                }
+            }
+            else if(recipe instanceof ShapelessOreRecipe)
+            {
+                ShapelessOreRecipe shapeless = (ShapelessOreRecipe) recipe;
+                NonNullList<Ingredient> ingredients = shapeless.getIngredients();
+                return gen.getCraftingShapelessRecipe(ingredients, shapeless.getRecipeOutput());
+            }
+        }
+        catch(Exception e)
+        {
+            CraftGuideLog.log(e, "Error processing ore dictionary recipe", true);
+        }
 
-	@Override
-	public List<String> emptyOreDictEntryTextImpl(List<?> oreDictionaryList)
-	{
-		if(!mappingCache.containsKey(oreDictionaryList))
-		{
-			mappingCache.put(oreDictionaryList, getOreDictionaryNameImpl(oreDictionaryList));
-		}
+        return null;
+    }
 
-		String name = mappingCache.get(oreDictionaryList);
+    private IdentityHashMap<List<?>, String> mappingCache = new IdentityHashMap<>();
 
-		if(name == null)
-		{
-			return null;
-		}
-		else
-		{
-			List<String> text = new ArrayList<>(1);
-			text.add(emptyOreText.format(name));
-			return text;
-		}
-	}
+    @Override
+    public List<String> emptyOreDictEntryTextImpl(List<?> oreDictionaryList)
+    {
+        if(!mappingCache.containsKey(oreDictionaryList))
+        {
+            mappingCache.put(oreDictionaryList, getOreDictionaryNameImpl(oreDictionaryList));
+        }
 
-	private IdentityHashMap<List<?>, String> oreDictName = new IdentityHashMap<>();
+        String name = mappingCache.get(oreDictionaryList);
 
-	@Override
-	public String getOreDictionaryNameImpl(List<?> list)
-	{
-		if(oreDictName.containsKey(list))
-		{
-			return oreDictName.get(list);
-		}
+        if(name == null)
+        {
+            return null;
+        }
+        else
+        {
+            List<String> text = new ArrayList<>(1);
+            text.add(emptyOreText.format(name));
+            return text;
+        }
+    }
 
-		String name = getOreDictName(list);
-		oreDictName.put(list, name);
+    private IdentityHashMap<List<?>, String> oreDictName = new IdentityHashMap<>();
 
-		return name;
-	}
+    @Override
+    public String getOreDictionaryNameImpl(List<?> list)
+    {
+        if(oreDictName.containsKey(list))
+        {
+            return oreDictName.get(list);
+        }
 
-	private String getOreDictName(List<?> list)
-	{
-		try
-		{
-			List<List<ItemStack>> listList = (List<List<ItemStack>>)CommonUtilities.getPrivateValue(OreDictionary.class, null, "idToStackUn");
-			for(int i = 0; i < listList.size(); i++)
-			{
-				if(listList.get(i) == list)
-				{
-					return OreDictionary.getOreName(i);
-				}
-			}
-		}
-		catch(NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e)
-		{
-			CraftGuideLog.log(e, "", true);
-		}
+        String name = getOreDictName(list);
+        oreDictName.put(list, name);
 
-		return null;
-	}
+        return name;
+    }
+
+    private String getOreDictName(List<?> list)
+    {
+        try
+        {
+            for (String oreName : OreDictionary.getOreNames()) {
+                List<ItemStack> oreStacks = OreDictionary.getOres(oreName);
+                if (oreStacks == list) {
+                    return oreName;
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            CraftGuideLog.log(e, "Error getting ore dictionary name", false);
+        }
+
+        return null;
+    }
 }
