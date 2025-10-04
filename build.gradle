@@ -201,6 +201,15 @@ processResources {
 
 }
 
+task createCraftGuideResourcesZip(type: Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveFileName = "CraftGuideResources.zip"
+
+    from('themes') {
+        into('')
+    }
+}
+
 jar {
     manifest {
         def attribute_map = [:]
@@ -221,6 +230,11 @@ jar {
     }
     // Add all embedded dependencies into the jar
     from(provider{ configurations.embed.collect {it.isDirectory() ? it : zipTree(it)} })
+    dependsOn(createCraftGuideResourcesZip)
+    from(createCraftGuideResourcesZip.archiveFile) {
+        into('')
+    }
+
 }
 
 idea {

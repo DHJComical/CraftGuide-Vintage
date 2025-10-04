@@ -73,30 +73,30 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
             craftingType = workbench;
         }
 
-        if(backgroundTexture.equals("/gui/BrewGuide.png"))
+        if(backgroundTexture.equals("/gui/brewguide.png"))
         {
-            backgroundTexture = "craftguide:textures/gui/BrewGuide.png";
+            backgroundTexture = "craftguide:textures/gui/brewguide.png";
         }
-        else if(backgroundTexture.equals("/gui/CraftGuide.png"))
+        else if(backgroundTexture.equals("/gui/craftguide.png"))
         {
-            backgroundTexture = "craftguide:textures/gui/CraftGuide.png";
+            backgroundTexture = "craftguide:textures/gui/craftguide.png";
         }
-        else if(backgroundTexture.equals("/gui/CraftGuideRecipe.png"))
+        else if(backgroundTexture.equals("/gui/craftguiderecipe.png"))
         {
-            backgroundTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
+            backgroundTexture = "craftguide:textures/gui/craftguiderecipe.png";
         }
 
-        if(backgroundSelectedTexture.equals("/gui/BrewGuide.png"))
+        if(backgroundSelectedTexture.equals("/gui/brewguide.png"))
         {
-            backgroundSelectedTexture = "craftguide:textures/gui/BrewGuide.png";
+            backgroundSelectedTexture = "craftguide:textures/gui/brewguide.png";
         }
-        else if(backgroundSelectedTexture.equals("/gui/CraftGuide.png"))
+        else if(backgroundSelectedTexture.equals("/gui/craftguide.png"))
         {
-            backgroundSelectedTexture = "craftguide:textures/gui/CraftGuide.png";
+            backgroundSelectedTexture = "craftguide:textures/gui/craftguide.png";
         }
-        else if(backgroundSelectedTexture.equals("/gui/CraftGuideRecipe.png"))
+        else if(backgroundSelectedTexture.equals("/gui/craftguiderecipe.png"))
         {
-            backgroundSelectedTexture = "craftguide:textures/gui/CraftGuideRecipe.png";
+            backgroundSelectedTexture = "craftguide:textures/gui/craftguiderecipe.png";
         }
 
         for(ItemStack stack: recipes.keySet())

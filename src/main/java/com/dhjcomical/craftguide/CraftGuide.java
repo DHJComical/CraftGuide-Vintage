@@ -57,8 +57,6 @@ public class CraftGuide
 
 	public void preInit(boolean disableItem)
 	{
-		CraftGuideLog.init(new File(logDirectory(), "CraftGuide.log"));
-
 		initForgeExtensions();
 		loadProperties();
 		addItem();
@@ -153,7 +151,7 @@ public class CraftGuide
 	static
 	{
 		configComments = new HashMap<>();
-		configComments.put("newerBackgroundStyle", "If false, CraftGuide will use the images from CraftGuideRecipe.png for vanilla shaped crafting recipes, which is better for texture packs. If true, CraftGuide will use the default background (pieced together from parts of CraftGuide.png, then slot backgrounds drawn overtop), which is worse for texture packs, and looks identical without a texture pack.");
+		configComments.put("newerBackgroundStyle", "If false, CraftGuide will use the images from craftguiderecipe.png for vanilla shaped crafting recipes, which is better for texture packs. If true, CraftGuide will use the default background (pieced together from parts of craftguide.png, then slot backgrounds drawn overtop), which is worse for texture packs, and looks identical without a texture pack.");
 		configComments.put("hideMundanePotionRecipes", "Hides recipes that convert a useful potion into a mundane potion with the damage value 8192, which is basically a failed potion. In the vanilla ingredients, they only occur when you try to add an effect without first adding netherwart (or add a second effect ingredient without using netherwart in between). Note that 8192 means, to the vanilla brewing system 'can make a splash potion without losing it's effects', and a potion with a value of EXACTLY 8192 does not have any effects anyway.");
 		configComments.put("logThemeDebugInfo", "If true, CraftGuide will output a lot of debugging text every time it reloads the themes.");
 		configComments.put("gridPacking", "Affects whether CraftGuide distributes leftover horizontal space between columns, or puts it all at the far right. Currently not useful, as any grid with columns now resizes itself so that it doesn't have any leftover horizntal space that needs to be distributed.");
@@ -188,6 +186,7 @@ public class CraftGuide
 		config.setProperty("defaultKeybind", Integer.toString(Keyboard.KEY_G));
 		config.setProperty("ae2Workaround", Boolean.toString(true));
 		config.setProperty("useWorkerThread", Boolean.toString(true));
+        config.setProperty("theme", "base");
 	}
 
 	/**
@@ -270,6 +269,7 @@ public class CraftGuide
 		rightClickClearText = Boolean.valueOf(config.getProperty("rightClickClearText"));
 		ae2Workaround = Boolean.valueOf(config.getProperty("ae2Workaround"));
 		useWorkerThread = Boolean.valueOf(config.getProperty("useWorkerThread"));
+        ThemeManager.currentThemeName = config.getProperty("theme", "base");
 
 		if(newConfigFile != null && !newConfigFile.exists())
 		{

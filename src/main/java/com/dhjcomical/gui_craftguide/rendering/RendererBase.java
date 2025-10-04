@@ -1,5 +1,8 @@
 package com.dhjcomical.gui_craftguide.rendering;
 
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.renderer.GlStateManager;
@@ -43,55 +46,42 @@ public abstract class RendererBase
 		alphaModifier = 1.0f;
 	}
 
-	public void drawRect(int x, int y, int width, int height)
-	{
-		GlStateManager.disableDepth();
-		GlStateManager.disableTexture2D();
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(770, 771);
-		GlStateManager.disableLighting();
+    public void drawRect(int x, int y, int width, int height) {
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.color(red * redModifier, green * greenModifier, blue * blueModifier, alpha * alphaModifier);
 
-		setGlColor(red, green, blue, alpha);
-		GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2i(x, y);
-			GL11.glVertex2i(x, y + height);
-			GL11.glVertex2i(x + width, y + height);
-			GL11.glVertex2i(x + width, y);
-		GL11.glEnd();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+        bufferbuilder.pos(x, y + height, 0.0D).endVertex();
+        bufferbuilder.pos(x + width, y + height, 0.0D).endVertex();
+        bufferbuilder.pos(x + width, y, 0.0D).endVertex();
+        bufferbuilder.pos(x, y, 0.0D).endVertex();
+        tessellator.draw();
 
-		GlStateManager.enableLighting();
-		GlStateManager.disableBlend();
-		GlStateManager.enableTexture2D();
-	}
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+    }
 
-	public void drawTexturedRect(
-			int x, int y, int width, int height,
-			double u, double v, double u2, double v2)
-	{
-		GlStateManager.disableDepth();
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(770, 771);
-		GlStateManager.disableLighting();
+    public void drawTexturedRect(int x, int y, int width, int height, double u, double v, double u2, double v2) {
 
-		setGlColor(red, green, blue, alpha);
-		GL11.glBegin(GL11.GL_QUADS);
-			GL11.glTexCoord2d(u, v);
-			GL11.glVertex2i(x, y);
+        GlStateManager.enableTexture2D();
 
-			GL11.glTexCoord2d(u, v2);
-			GL11.glVertex2i(x, y + height);
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-			GL11.glTexCoord2d(u2, v2);
-			GL11.glVertex2i(x + width, y + height);
-
-			GL11.glTexCoord2d(u2, v);
-			GL11.glVertex2i(x + width, y);
-		GL11.glEnd();
-
-		GlStateManager.enableLighting();
-		GlStateManager.disableBlend();
-	}
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        bufferbuilder.pos(x,         y + height, 0.0D).tex(u, v2).endVertex();
+        bufferbuilder.pos(x + width, y + height, 0.0D).tex(u2, v2).endVertex();
+        bufferbuilder.pos(x + width, y,          0.0D).tex(u2, v).endVertex();
+        bufferbuilder.pos(x,         y,          0.0D).tex(u, v).endVertex();
+        tessellator.draw();
+    }
 
 	public void drawTexturedRect(Texture texture,
 			int x, int y, int width, int height, int u, int v)

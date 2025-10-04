@@ -8,18 +8,18 @@
 	</metadata>
 	<image id="base_image">
 		<source type="file">base.png</source>
-		<source type="resource">craftguide:textures/gui/CraftGuide.png</source>
-		<source type="resource">minecraft:textures/gui/CraftGuide.png</source>
+		<source type="resource">craftguide:textures/gui/craftguide.png</source>
+		<source type="resource">minecraft:textures/gui/craftguide.png</source>
 	</image>
 	<image id="recipe_backgrounds">
-		<source type="resource">craftguide:textures/gui/CraftGuideRecipe.png
+		<source type="resource">craftguide:textures/gui/craftguiderecipe.png
 		</source>
-		<source type="resource">minecraft:textures/gui/CraftGuideRecipe.png
+		<source type="resource">minecraft:textures/gui/craftguiderecipe.png
 		</source>
 	</image>
 	<image id="brew_recipe_background">
-		<source type="resource">craftguide:textures/gui/BrewGuide.png</source>
-		<source type="resource">minecraft:textures/gui/BrewGuide.png</source>
+		<source type="resource">craftguide:textures/gui/brewguide.png</source>
+		<source type="resource">minecraft:textures/gui/brewguide.png</source>
 	</image>
 	<image id="spinner-img">
 		<source type="file">spinner.png</source>

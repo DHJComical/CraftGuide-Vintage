@@ -16,6 +16,7 @@ import com.dhjcomical.craftguide.api.CraftGuideAPIObject;
 import com.dhjcomical.craftguide.api.RecipeGenerator;
 import com.dhjcomical.craftguide.api.RecipeProvider;
 import com.dhjcomical.craftguide.itemtype.ItemType;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class BrewingRecipes extends CraftGuideAPIObject implements RecipeProvider
 {
@@ -28,20 +29,16 @@ public class BrewingRecipes extends CraftGuideAPIObject implements RecipeProvide
 		TreeSet<ItemType> ingredients = new TreeSet<>();
 		TreeSet<ItemType> inputs = new TreeSet<>();
 
-        for(Item item: Item.REGISTRY)
-        {
+        for (Item item : ForgeRegistries.ITEMS.getValuesCollection()) {
             NonNullList<ItemStack> itemSet = NonNullList.create();
 
-            item.getSubItems(null, itemSet);
+            item.getSubItems(CreativeTabs.SEARCH, itemSet);
 
-            for(ItemStack stack: itemSet)
-            {
-                if(!stack.isEmpty())
-                {
-                    if(BrewingRecipeRegistry.isValidIngredient(stack))
+            for (ItemStack stack : itemSet) {
+                if (!stack.isEmpty()) {
+                    if (BrewingRecipeRegistry.isValidIngredient(stack))
                         ingredients.add(ItemType.getInstance(stack));
-
-                    if(BrewingRecipeRegistry.isValidInput(stack))
+                    if (BrewingRecipeRegistry.isValidInput(stack))
                         inputs.add(ItemType.getInstance(stack));
                 }
             }

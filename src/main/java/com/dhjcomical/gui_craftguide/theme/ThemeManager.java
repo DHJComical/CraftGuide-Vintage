@@ -37,6 +37,7 @@ public class ThemeManager
 	public void reload()
 	{
 		File themeDir = CraftGuideClient.themeDirectory();
+        CraftGuideLog.log("Theme directory is: " + (themeDir != null ? themeDir.getAbsolutePath() : "null"));
 		Image.unloadFileTextures();
 
 		if(themeDir == null || !themeDir.isDirectory())

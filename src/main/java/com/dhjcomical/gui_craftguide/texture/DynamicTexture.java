@@ -2,52 +2,44 @@ package com.dhjcomical.gui_craftguide.texture;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import com.dhjcomical.gui_craftguide.rendering.RendererBase;
+import com.dhjcomical.gui_craftguide.theme.ThemeManager;
 
-public class DynamicTexture implements Texture
-{
-	public Texture mapped;
-	public final String id;
+public class DynamicTexture implements Texture {
+    private static Map<String, Texture> textureRegistry = new HashMap<>();
+    private static Map<String, DynamicTexture> instanceRegistry = new HashMap<>();
+    private final String id;
 
-	private DynamicTexture(String id)
-	{
-		this.id = id;
-	}
+    private DynamicTexture(String id) { this.id = id; }
+    public String getId() { return this.id; }
 
-	@Override
-	public void renderRect(RendererBase renderer, int x, int y, int width, int height, int u, int v)
-	{
-		if(mapped != null)
-		{
-			mapped.renderRect(renderer, x, y, width, height, u, v);
-		}
-	}
+    public static DynamicTexture instance(String id) {
+        if (!instanceRegistry.containsKey(id)) {
+            instanceRegistry.put(id, new DynamicTexture(id));
+        }
+        return instanceRegistry.get(id);
+    }
 
-	private static Map<String, DynamicTexture> instances = new HashMap<>();
+    public static void instance(String id, Texture texture) {
 
-	public static Texture instance(String id, Texture mappedTo)
-	{
-		DynamicTexture texture = (DynamicTexture)instance(id);
+        ThemeManager.debug("[CRAFTGUIDE DEBUG] CACHING texture for ID '" + id + "'. Texture is a: " + texture.getClass().getSimpleName());
 
-		if(texture != null)
-		{
-			texture.mapped = mappedTo;
-		}
+        textureRegistry.put(id, texture);
+    }
 
-		return texture;
-	}
+    public Texture getTexture() {
+        Texture realTexture = textureRegistry.get(this.id);
 
-	public static Texture instance(String id)
-	{
-		DynamicTexture texture = instances.get(id);
+        ThemeManager.debug("[CRAFTGUIDE DEBUG]   -> ClipTexture is asking for real texture of '" + this.id + "'. Found: " + (realTexture != null ? realTexture.getClass().getSimpleName() : "null"));
 
-		if(texture == null)
-		{
-			texture = new DynamicTexture(id);
-			instances.put(id, texture);
-		}
+        return realTexture;
+    }
 
-		return texture;
-	}
+    @Override
+    public void renderRect(RendererBase renderer, int x, int y, int width, int height, int u, int v) {
+        Texture realTexture = getTexture();
+        if (realTexture != null) {
+            realTexture.renderRect(renderer, x, y, width, height, u, v);
+        }
+    }
 }

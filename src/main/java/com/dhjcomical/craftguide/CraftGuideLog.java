@@ -1,81 +1,62 @@
 package com.dhjcomical.craftguide;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-
+import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
-public class CraftGuideLog
-{
-	private static PrintWriter output;
-	private static int exceptionsLogged = 0;
-	private static final int EXCEPTION_LIMIT = 1000;
+// 这个类现在非常简单
+public class CraftGuideLog {
+    public static void log(Object object) {
+        if (object != null) {
+            CraftGuide_FML.logger.log(Level.INFO, object.toString());
+        }
+    }
 
-	public static void init(File file)
-	{
-		try
-		{
-			output = new PrintWriter(file);
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    public static void log(String text) {
+        CraftGuide_FML.logger.log(Level.INFO, text);
+    }
 
-	public static void log(String text)
-	{
-		log(text, false);
-	}
+    public static void log(String text, boolean console) {
+        CraftGuide_FML.logger.log(Level.INFO, text);
+    }
 
-	public static void log(String text, boolean console)
-	{
-		if(console && CraftGuide.loaderSide != null)
-		{
-			CraftGuide.loaderSide.logConsole(text);
-		}
+    public static void log(Throwable e) {
+        CraftGuide_FML.logger.log(Level.ERROR, e.getLocalizedMessage(), e);
+    }
 
-		output.println(text);
-		output.flush();
-	}
+    public static void log(Throwable e, String description, boolean console) {
+        CraftGuide_FML.logger.log(Level.ERROR, description, e);
+    }
 
-	public static void log(Throwable e)
-	{
-		log(e, "", false);
-	}
+    public static void checkGlError() {
+        checkGlError("Somewhere");
+    }
+    // ------------------------------------
 
-	public static void log(Throwable e, String text, boolean console)
-	{
-		if(exceptionsLogged <= EXCEPTION_LIMIT)
-		{
-			if(console && CraftGuide.loaderSide != null)
-			{
-				CraftGuide.loaderSide.logConsole(text, e);
-			}
+    /**
+     * Checks for any OpenGL errors that have occurred. If an error is found,
+     * it is logged to the console.
+     *
+     * @param context A string describing where this check is being performed.
+     */
+    public static void checkGlError(String context) {
+        int error = GL11.glGetError();
 
-			output.println(text);
-			e.printStackTrace(output);
-			output.flush();
+        if (error != GL11.GL_NO_ERROR) {
+            String errorString;
+            switch (error) {
+                case GL11.GL_INVALID_ENUM: errorString = "Invalid Enum"; break;
+                case GL11.GL_INVALID_VALUE: errorString = "Invalid Value"; break;
+                case GL11.GL_INVALID_OPERATION: errorString = "Invalid Operation"; break;
+                case GL11.GL_STACK_OVERFLOW: errorString = "Stack Overflow"; break;
+                case GL11.GL_STACK_UNDERFLOW: errorString = "Stack Underflow"; break;
+                case GL11.GL_OUT_OF_MEMORY: errorString = "Out of Memory"; break;
+                default: errorString = "Unknown Error (" + error + ")"; break;
+            }
 
-			if(exceptionsLogged == EXCEPTION_LIMIT)
-			{
-				log("Exception limit passed. To prevent excessively large log files, no further exceptions will be logged.");
-			}
+            CraftGuide_FML.logger.log(Level.ERROR, "########## GL ERROR ##########");
+            CraftGuide_FML.logger.log(Level.ERROR, "@ " + context);
+            CraftGuide_FML.logger.log(Level.ERROR, error + ": " + errorString);
+        }
+    }
 
-			exceptionsLogged++;
-		}
-	}
-
-	public static void checkGlError()
-	{
-		int i = GL11.glGetError();
-
-		if (i != 0)
-		{
-			String str = GLU.gluErrorString(i);
-			log(new Throwable(), "Encountered OpenGL error #" + i + ": " + str, true);
-		}
-	}
 }

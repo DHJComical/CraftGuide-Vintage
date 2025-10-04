@@ -1,14 +1,20 @@
 package com.dhjcomical.gui_craftguide.theme;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dhjcomical.gui_craftguide.texture.BasicTexture;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import com.dhjcomical.craftguide.CraftGuideLog;
 import com.dhjcomical.gui_craftguide.minecraft.Image;
@@ -93,37 +99,51 @@ public class Theme
 		dependencies.add(dependency);
 	}
 
-	public void generateTextures()
-	{
-		for(String imageID: images.keySet())
-		{
-			ThemeManager.debug("    Loading image '" + imageID + "'");
-			Texture texture = null;
+    public void generateTextures() {
+        ThemeManager.debug("=== Starting Texture Generation for theme '" + this.id + "' ===");
 
-			for(Object[] imageFormat: images.get(imageID))
-			{
-				texture = loadImage(imageFormat);
+        for (String imageID : this.images.keySet()) {
+            ThemeManager.debug("  Processing source image definition: '" + imageID + "'");
+            BufferedImage bufferedImage = null;
 
-				if(texture != null)
-				{
-					break;
-				}
-			}
+            for (Object[] imageFormat : this.images.get(imageID)) {
+                bufferedImage = loadImageToRam(imageFormat);
+                if (bufferedImage != null) {
+                    ThemeManager.debug("    -> SUCCESS: Loaded " + imageID + " (" + bufferedImage.getWidth() + "x" + bufferedImage.getHeight() + ")");
 
-			if(texture == null)
-			{
-				texture = loadImage(errorImage);
-			}
+                    try {
+                        int glTextureId = TextureUtil.glGenTextures();
+                        if (glTextureId == 0) {
+                            ThemeManager.debug("    -> CRITICAL ERROR: glGenTextures() returned 0!");
+                            continue;
+                        }
+                        TextureUtil.uploadTextureImageAllocate(glTextureId, bufferedImage, false, false);
+                        ThemeManager.debug("    -> UPLOADED to GPU. OpenGL ID: " + glTextureId);
 
-			textures.put(imageID, texture);
-		}
+                        BasicTexture gpuTexture = new BasicTexture(bufferedImage.getWidth(), bufferedImage.getHeight(), glTextureId);
+                        DynamicTexture.instance(imageID, gpuTexture);
 
-		for(String id: textures.keySet())
-		{
-			ThemeManager.debug("    Adding texture '" + id + "'. Maps to '" + textures.get(id) + "'");
-			DynamicTexture.instance(id, textures.get(id));
-		}
-	}
+                    } catch (Exception e) {
+                        ThemeManager.debug("    -> CRITICAL ERROR during GPU upload for '" + imageID + "'");
+                        CraftGuideLog.log(e);
+                    }
+                    break;
+                }
+            }
+            if (bufferedImage == null) {
+                ThemeManager.debug("  -> ERROR: Failed to load any source for image '" + imageID + "'");
+            }
+        }
+        ThemeManager.debug("  Finalizing all texture definitions...");
+        for (Map.Entry<String, Texture> entry : this.textures.entrySet()) {
+            String textureId = entry.getKey();
+            Texture textureObject = entry.getValue();
+            DynamicTexture.instance(textureId, textureObject);
+            ThemeManager.debug("    -> Cached definition for '" + textureId + "' (" + textureObject.getClass().getSimpleName() + ")");
+        }
+
+        ThemeManager.debug("=== Finished Texture Generation ===");
+    }
 
 	private Texture loadImage(Object[] imageFormat)
 	{
@@ -164,6 +184,39 @@ public class Theme
 		ThemeManager.debug("        Not found.");
 		return null;
 	}
+
+    private BufferedImage loadImageToRam(Object[] imageFormat) {
+        String sourceType = (String) imageFormat[0];
+        String source = (String) imageFormat[1];
+
+        ThemeManager.debug("      Attempting to load " + sourceType + " image '" + source + "'");
+
+        try {
+            if (sourceType.equalsIgnoreCase("resource")) {
+                ResourceLocation location = new ResourceLocation(source);
+                IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(location);
+                try (InputStream inputStream = resource.getInputStream()) {
+                    return TextureUtil.readBufferedImage(inputStream);
+                }
+            }
+            else if (sourceType.equalsIgnoreCase("file")) {
+                File themeFolder = (File) imageFormat[2];
+                if (themeFolder != null) {
+                    File imageFile = new File(themeFolder, source);
+                    if (imageFile.exists() && imageFile.isFile()) {
+                        try (InputStream inputStream = Files.newInputStream(imageFile.toPath())) {
+                            return TextureUtil.readBufferedImage(inputStream);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            ThemeManager.debug("        -> Failed to load with IOException: " + e.getMessage());
+        }
+
+        ThemeManager.debug("        -> Not found or failed to read.");
+        return null;
+    }
 
 	public void addTexture(String id, Texture texture)
 	{
