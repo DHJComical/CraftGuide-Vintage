@@ -67,30 +67,39 @@ public class CraftTypeDisplay extends GuiScrollableGrid implements IRecipeCacheL
 		}
 	}
 
-	@Override
-	public void renderGridRow(GuiRenderer renderer, int xOffset, int yOffset, int row)
-	{
-		Set<ItemType> types = recipeCache.getCraftTypes();
+    @Override
+    public void renderGridRow(GuiRenderer renderer, int xOffset, int yOffset, int row)
+    {
+        // Ensure clean state at row start
+        net.minecraft.client.renderer.GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        net.minecraft.client.renderer.GlStateManager.enableBlend();
 
-		if(row < types.size())
-		{
-			ItemType type = (ItemType)types.toArray()[row];
-			displayBackground.renderRect(renderer, xOffset, yOffset, width(), rowHeight, 0, 0);
-			renderer.drawItemStack(type.getDisplayStack(), xOffset + 8, yOffset + 8, false);
+        Set<ItemType> types = recipeCache.getCraftTypes();
 
-			if(hidden(type))
-			{
-				hiddenOverlay.render(renderer, xOffset + 8, yOffset + 8);
-			}
+        if(row < types.size())
+        {
+            ItemType type = (ItemType)types.toArray()[row];
+            displayBackground.renderRect(renderer, xOffset, yOffset, width(), rowHeight, 0, 0);
+            renderer.drawItemStack(type.getDisplayStack(), xOffset + 8, yOffset + 8, false);
 
-			for(int i = 0; i < 3; i++)
-			{
-				TexturedRect rect = buttons[i == setting(type)? i + 3 : i];
+            if(hidden(type))
+            {
+                hiddenOverlay.render(renderer, xOffset + 8, yOffset + 8);
+            }
 
-				rect.render(renderer, xOffset + i * 29 + (bounds.width() - (3 * 29 + 24)) / 2 + 24, yOffset + 2);
-			}
-		}
-	}
+            for(int i = 0; i < 3; i++)
+            {
+                TexturedRect rect = buttons[i == setting(type)? i + 3 : i];
+                rect.render(renderer, xOffset + i * 29 + (bounds.width() - (3 * 29 + 24)) / 2 + 24, yOffset + 2);
+            }
+        }
+
+        // Ensure clean state at row end for next row
+        net.minecraft.client.renderer.GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        net.minecraft.client.renderer.GlStateManager.enableBlend();
+        net.minecraft.client.Minecraft.getMinecraft().getTextureManager()
+                .bindTexture(net.minecraft.client.renderer.texture.TextureMap.LOCATION_BLOCKS_TEXTURE);
+    }
 
 	private boolean hidden(ItemType type)
 	{
