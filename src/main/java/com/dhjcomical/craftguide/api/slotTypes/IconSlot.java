@@ -2,6 +2,9 @@ package com.dhjcomical.craftguide.api.slotTypes;
 
 import java.util.List;
 
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
@@ -73,19 +76,14 @@ public class IconSlot implements Slot
 			GlStateManager.blendFunc(770, 771);
 			setColor(color);
 
-			GL11.glBegin(GL11.GL_QUADS);
-				GL11.glTexCoord2d(u, v);
-				GL11.glVertex2i(x, y);
-
-				GL11.glTexCoord2d(u, v2);
-				GL11.glVertex2i(x, y2);
-
-				GL11.glTexCoord2d(u2, v2);
-				GL11.glVertex2i(x2, y2);
-
-				GL11.glTexCoord2d(u2, v);
-				GL11.glVertex2i(x2, y);
-			GL11.glEnd();
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder buffer = tessellator.getBuffer();
+            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+            buffer.pos(x, y, 0).tex(u, v).endVertex();
+            buffer.pos(x, y2, 0).tex(u, v2).endVertex();
+            buffer.pos(x2, y2, 0).tex(u2, v2).endVertex();
+            buffer.pos(x2, y, 0).tex(u2, v).endVertex();
+            tessellator.draw();
 		}
 
 		if(data.length > 6)

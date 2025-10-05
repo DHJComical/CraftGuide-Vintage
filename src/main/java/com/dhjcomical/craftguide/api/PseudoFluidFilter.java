@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
@@ -85,19 +88,14 @@ public class PseudoFluidFilter implements ItemFilter
                 GlStateManager.enableTexture2D();
                 GlStateManager.color(1, 1, 1, 1);
 
-                GL11.glBegin(GL11.GL_QUADS);
-                GL11.glTexCoord2d(u, v);
-                GL11.glVertex2i(x + 3, y + 1);
-
-                GL11.glTexCoord2d(u, v2);
-                GL11.glVertex2i(x + 3, y + 15);
-
-                GL11.glTexCoord2d(u2, v2);
-                GL11.glVertex2i(x + 13, y + 15);
-
-                GL11.glTexCoord2d(u2, v);
-                GL11.glVertex2i(x + 13, y + 1);
-                GL11.glEnd();
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder buffer = tessellator.getBuffer();
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+                buffer.pos(x + 3, y + 1, 0).tex(u, v).endVertex();
+                buffer.pos(x + 3, y + 15, 0).tex(u, v2).endVertex();
+                buffer.pos(x + 13, y + 15, 0).tex(u2, v2).endVertex();
+                buffer.pos(x + 13, y + 1, 0).tex(u2, v).endVertex();
+                tessellator.draw();
             }
         }
 
