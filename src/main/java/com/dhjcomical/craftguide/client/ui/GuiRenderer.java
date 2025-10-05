@@ -46,22 +46,22 @@ public class GuiRenderer extends RendererBase implements Renderer {
      * Set to 'true' to enable detailed logging for debugging rendering issues.
      * Set to 'false' for normal gameplay to avoid log spam.
      */
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
 
     /**
      * Log GL state before and after each item render.
      */
-    public static final boolean DEBUG_GL_STATE = true;
+    public static final boolean DEBUG_GL_STATE = false;
 
     /**
      * Log detailed model information.
      */
-    public static final boolean DEBUG_MODEL_INFO = true;
+    public static final boolean DEBUG_MODEL_INFO = false;
 
     /**
      * Track rendering performance.
      */
-    public static final boolean DEBUG_PERFORMANCE = true;
+    public static final boolean DEBUG_PERFORMANCE = false;
     // ===================================================================
 
     private double frameStartTime;
@@ -88,20 +88,26 @@ public class GuiRenderer extends RendererBase implements Renderer {
         resetValues();
         frameStartTime = Minecraft.getSystemTime() / 1000.0;
 
-        // CRITICAL: Ensure texture atlas is bound at frame start
-        // This prevents carryover issues from previous frame
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-        // Reset GL state to known good values
-        GlStateManager.disableLighting();
-        GlStateManager.disableAlpha();
-        GlStateManager.disableDepth();
-        RenderHelper.disableStandardItemLighting();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+        GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
+        GlStateManager.disableAlpha();
+        GlStateManager.disableRescaleNormal();
+        RenderHelper.disableStandardItemLighting();
 
         if (DEBUG_MODE && DEBUG_PERFORMANCE) {
             int startTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-            CraftGuideLog.log("[FRAME_START] New frame started at " + frameStartTime + " | Initial texture: " + startTexture);
+            CraftGuideLog.log("[FRAME_START] New frame started | Texture: " + startTexture);
         }
     }
 
@@ -111,7 +117,22 @@ public class GuiRenderer extends RendererBase implements Renderer {
         }
 
         overlays.clear();
-        GlStateManager.color(1, 1, 1, 1);
+
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+        GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
+        GlStateManager.disableAlpha();
+        RenderHelper.disableStandardItemLighting();
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
         if (DEBUG_MODE && DEBUG_PERFORMANCE) {
             CraftGuideLog.log("[FRAME_END] Total renders this session: " + totalRenderAttempts +
@@ -120,7 +141,6 @@ public class GuiRenderer extends RendererBase implements Renderer {
                     " | This frame: " + currentBatchSize);
         }
 
-        // Reset batch counter for next frame
         currentBatchSize = 0;
     }
 
@@ -272,6 +292,11 @@ public class GuiRenderer extends RendererBase implements Renderer {
         totalRenderAttempts++;
         currentBatchSize++;
         long startTime = DEBUG_PERFORMANCE ? System.nanoTime() : 0;
+
+        int currentTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+        if (DEBUG_MODE) {
+            CraftGuideLog.log("[WARNING] Current texture is " + currentTexture + ", not texture atlas. Resetting...");
+        }
 
         // Warn if batch is getting large
         if (DEBUG_MODE && currentBatchSize == 1) {
