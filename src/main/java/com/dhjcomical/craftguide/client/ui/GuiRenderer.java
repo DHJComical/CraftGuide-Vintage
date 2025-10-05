@@ -260,12 +260,12 @@ public class GuiRenderer extends RendererBase implements com.dhjcomical.craftgui
         GlStateManager.enableRescaleNormal();
         itemRenderer.zLevel = 100.0F;
 
-        int initialMatrixStackDepth = GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
+        int initialMatrixStackDepth = GlStateManager.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
         return initialMatrixStackDepth;
     }
 
     private void fixGlState(int initialMatrixStackDepth) {
-        int finalMatrixStackDepth = GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
+        int finalMatrixStackDepth = GlStateManager.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
 
         // If something went wrong, and an exception was thrown after at least one matrix push,
         //  fix it here, so that rendering errors do not affect later parts of the UI.

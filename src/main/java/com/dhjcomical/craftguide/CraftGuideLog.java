@@ -1,5 +1,6 @@
 package com.dhjcomical.craftguide;
 
+import net.minecraft.client.renderer.GlStateManager;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 
@@ -39,7 +40,7 @@ public class CraftGuideLog {
      * @param context A string describing where this check is being performed.
      */
     public static void checkGlError(String context) {
-        int error = GL11.glGetError();
+        int error = GlStateManager.glGetError();
 
         if (error != GL11.GL_NO_ERROR) {
             String errorString;
