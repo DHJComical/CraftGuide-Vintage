@@ -74,7 +74,7 @@ public class XMLThemeWriter implements ThemeWriter
 
 						if(clip.source instanceof DynamicTexture)
 						{
-							writeElement("source", ((DynamicTexture)clip.source).getId());
+							writeElement("source", ((DynamicTexture)clip.source).id);
 						}
 						else
 						{
