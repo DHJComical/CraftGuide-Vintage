@@ -24,7 +24,7 @@ public class ItemSlotImplementationImplementation implements ItemSlotImplementat
      * Set this to 'true' to enable detailed logging for debugging rendering issues.
      * Set this to 'false' for normal gameplay to avoid spamming the log file.
      */
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
     // ============================================================
 
     private NamedTexture overlayAny;
