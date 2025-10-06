@@ -46,12 +46,15 @@ public abstract class RendererBase
 		alphaModifier = 1.0f;
 	}
 
-    public void drawRect(int x, int y, int width, int height) {
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.color(red * redModifier, green * greenModifier, blue * blueModifier, alpha * alphaModifier);
+	public void drawRect(int x, int y, int width, int height)
+	{
+		GlStateManager.disableDepth();
+		GlStateManager.disableTexture2D();
+		GlStateManager.enableBlend();
+		GlStateManager.blendFunc(770, 771);
+		GlStateManager.disableLighting();
 
+		setGlColor(red, green, blue, alpha);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
@@ -61,18 +64,22 @@ public abstract class RendererBase
         bufferbuilder.pos(x, y, 0.0D).endVertex();
         tessellator.draw();
 
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-    }
+		GlStateManager.enableLighting();
+		GlStateManager.disableBlend();
+		GlStateManager.enableTexture2D();
+	}
 
-    public void drawTexturedRect(int x, int y, int width, int height, double u, double v, double u2, double v2) {
+	public void drawTexturedRect(
+			int x, int y, int width, int height,
+			double u, double v, double u2, double v2)
+	{
+		GlStateManager.disableDepth();
+		GlStateManager.enableTexture2D();
+		GlStateManager.enableBlend();
+		GlStateManager.blendFunc(770, 771);
+		GlStateManager.disableLighting();
 
-        GlStateManager.enableTexture2D();
-
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-
+		setGlColor(red, green, blue, alpha);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
@@ -81,7 +88,10 @@ public abstract class RendererBase
         bufferbuilder.pos(x + width, y,          0.0D).tex(u2, v).endVertex();
         bufferbuilder.pos(x,         y,          0.0D).tex(u, v).endVertex();
         tessellator.draw();
-    }
+
+		GlStateManager.enableLighting();
+		GlStateManager.disableBlend();
+	}
 
 	public void drawTexturedRect(Texture texture,
 			int x, int y, int width, int height, int u, int v)

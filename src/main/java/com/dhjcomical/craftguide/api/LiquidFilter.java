@@ -5,10 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -95,19 +98,14 @@ public class LiquidFilter implements ItemFilter
                 GlStateManager.enableTexture2D();
                 GlStateManager.color(1, 1, 1, 1);
 
-                GL11.glBegin(GL11.GL_QUADS);
-                GL11.glTexCoord2d(u, v);
-                GL11.glVertex2i(x + 3, y + 1);
-
-                GL11.glTexCoord2d(u, v2);
-                GL11.glVertex2i(x + 3, y + 15);
-
-                GL11.glTexCoord2d(u2, v2);
-                GL11.glVertex2i(x + 13, y + 15);
-
-                GL11.glTexCoord2d(u2, v);
-                GL11.glVertex2i(x + 13, y + 1);
-                GL11.glEnd();
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder buffer = tessellator.getBuffer();
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+                buffer.pos(x + 3, y + 1, 0).tex(u, v).endVertex();
+                buffer.pos(x + 3, y + 15, 0).tex(u, v2).endVertex();
+                buffer.pos(x + 13, y + 15, 0).tex(u2, v2).endVertex();
+                buffer.pos(x + 13, y + 1, 0).tex(u2, v).endVertex();
+                tessellator.draw();
             }
         }
 

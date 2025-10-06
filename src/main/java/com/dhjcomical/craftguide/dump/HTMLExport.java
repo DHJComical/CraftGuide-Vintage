@@ -18,6 +18,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 
+import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -120,36 +121,35 @@ public class HTMLExport
 		writeFooter();
 		htmlOut.close();
 
-		Minecraft mc = Minecraft.getMinecraft();
-		mc.getFramebuffer().unbindFramebuffer();
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.getFramebuffer().unbindFramebuffer();
 
-		GL11.glColorMask(true, true, true, false);
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glDepthMask(false);
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(0.0D, mc.displayWidth, mc.displayHeight, 0.0D, 1000.0D, 3000.0D);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-		GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
-		GL11.glViewport(0, 0, mc.displayWidth, mc.displayHeight);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glDisable(GL11.GL_LIGHTING);
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+        GlStateManager.colorMask(true, true, true, false);
+        GlStateManager.disableDepth();
+        GlStateManager.depthMask(false);
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.loadIdentity();
+        GlStateManager.ortho(0.0D, mc.displayWidth, mc.displayHeight, 0.0D, 1000.0D, 3000.0D);
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        GlStateManager.loadIdentity();
+        GlStateManager.translate(0.0F, 0.0F, -2000.0F);
+        GlStateManager.viewport(0, 0, mc.displayWidth, mc.displayHeight);
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableLighting();
+        GlStateManager.disableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableColorMaterial();
 
-
-		ScaledResolution scaledresolution = new ScaledResolution(mc);
-		int guiScale = scaledresolution.getScaleFactor();
-		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(0.0D, scaledresolution.getScaledWidth_double(), scaledresolution.getScaledHeight_double(), 0.0D, 1000.0D, 3000.0D);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-		GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
+        ScaledResolution scaledresolution = new ScaledResolution(mc);
+        int guiScale = scaledresolution.getScaleFactor();
+        GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT);
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.loadIdentity();
+        GlStateManager.ortho(0.0D, scaledresolution.getScaledWidth_double(), scaledresolution.getScaledHeight_double(), 0.0D, 1000.0D, 3000.0D);
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        GlStateManager.loadIdentity();
+        GlStateManager.translate(0.0F, 0.0F, -2000.0F);
 
 		try(BufferedWriter cssOut = new BufferedWriter(new FileWriter(new File(directory, "recipe_export.css"))))
 		{
@@ -171,8 +171,8 @@ public class HTMLExport
 
 		}
 
-		GL11.glDepthMask(true);
-		GL11.glColorMask(true, true, true, true);
+        GlStateManager.depthMask(true);
+        GlStateManager.colorMask(true, true, true, true);
 		mc.getFramebuffer().bindFramebuffer(true);
 		CraftGuideLog.checkGlError();
 	}

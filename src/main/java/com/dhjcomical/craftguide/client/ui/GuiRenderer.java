@@ -1,31 +1,5 @@
 package com.dhjcomical.craftguide.client.ui;
 
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import com.dhjcomical.craftguide.api.Renderer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
-
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
 import com.dhjcomical.craftguide.CommonUtilities;
 import com.dhjcomical.craftguide.CraftGuide;
 import com.dhjcomical.craftguide.CraftGuideLog;
@@ -37,77 +11,35 @@ import com.dhjcomical.gui_craftguide.rendering.RendererBase;
 import com.dhjcomical.gui_craftguide.rendering.TexturedRect;
 import com.dhjcomical.gui_craftguide.texture.DynamicTexture;
 import com.dhjcomical.gui_craftguide.texture.Texture;
-import org.lwjgl.opengl.GL12;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.lwjgl.opengl.GL11;
 
-public class GuiRenderer extends RendererBase implements Renderer {
-    // ======================= DEBUG CONFIGURATION =======================
-    /**
-     * Master switch for all debugging features.
-     * Set to 'true' to enable detailed logging for debugging rendering issues.
-     * Set to 'false' for normal gameplay to avoid log spam.
-     */
-    public static final boolean DEBUG_MODE = false;
+import java.util.*;
 
-    /**
-     * Log GL state before and after each item render.
-     */
-    public static final boolean DEBUG_GL_STATE = false;
-
-    /**
-     * Log detailed model information.
-     */
-    public static final boolean DEBUG_MODEL_INFO = false;
-
-    /**
-     * Track rendering performance.
-     */
-    public static final boolean DEBUG_PERFORMANCE = false;
-    // ===================================================================
-
+public class GuiRenderer extends RendererBase implements com.dhjcomical.craftguide.api.Renderer {
     private double frameStartTime;
     private List<Overlay> overlays = new LinkedList<>();
     private Gui gui;
     private RenderItem itemRenderer = null;
 
     private static Map<ItemStack, ItemStack> itemStackFixes = new HashMap<>();
+
     private Renderable itemError = new TexturedRect(-1, -1, 18, 18, DynamicTexture.instance("item_error"), 238, 200);
-
-    // Debug counters
-    private static int totalRenderAttempts = 0;
-    private static int successfulRenders = 0;
-    private static int failedRenders = 0;
-    private static Map<String, Integer> itemRenderCounts = new HashMap<>();
-
-    // Batch rendering tracking
-    private static int currentBatchSize = 0;
-    private static final int BATCH_WARNING_THRESHOLD = 50;
-    private static long batchStartTime = 0;
 
     public void startFrame(Gui gui) {
         this.gui = gui;
         resetValues();
         frameStartTime = Minecraft.getSystemTime() / 1000.0;
-
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
-        );
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
-        GlStateManager.disableAlpha();
-        GlStateManager.disableRescaleNormal();
-        RenderHelper.disableStandardItemLighting();
-
-        if (DEBUG_MODE && DEBUG_PERFORMANCE) {
-            int startTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-            CraftGuideLog.log("[FRAME_START] New frame started | Texture: " + startTexture);
+        if (itemRenderer == null) {
+            itemRenderer = Minecraft.getMinecraft().getRenderItem();
         }
     }
 
@@ -118,30 +50,7 @@ public class GuiRenderer extends RendererBase implements Renderer {
 
         overlays.clear();
 
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
-        );
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
-        GlStateManager.disableAlpha();
-        RenderHelper.disableStandardItemLighting();
-
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-
-        if (DEBUG_MODE && DEBUG_PERFORMANCE) {
-            CraftGuideLog.log("[FRAME_END] Total renders this session: " + totalRenderAttempts +
-                    " | Success: " + successfulRenders +
-                    " | Failed: " + failedRenders +
-                    " | This frame: " + currentBatchSize);
-        }
-
-        currentBatchSize = 0;
+        GlStateManager.color(1, 1, 1, 1);
     }
 
     public void setColor(int colour, int alpha) {
@@ -227,13 +136,14 @@ public class GuiRenderer extends RendererBase implements Renderer {
                 w = Minecraft.getMinecraft().fontRenderer.getStringWidth(s);
             }
 
-            if (w > textWidth) {
-                textWidth = w;
-            }
-        }
+			if(w > textWidth)
+			{
+				textWidth = w;
+			}
+		}
 
-        int xMax = gui.width - textWidth - 4;
-        int yMax = gui.height - textHeight - 4;
+		int xMax = gui.width - textWidth - 4;
+		int yMax = gui.height - textHeight - 4;
 
         if (x > xMax) {
             x = xMax;
@@ -283,306 +193,48 @@ public class GuiRenderer extends RendererBase implements Renderer {
         }
     }
 
-    // ======================= ENHANCED ITEM RENDERING WITH FULL DEBUG =======================
-
-    /**
-     * Main item rendering method with comprehensive debugging.
-     */
-    public void drawItemStack(ItemStack itemStack, int x, int y, boolean renderOverlay) {
-        totalRenderAttempts++;
-        currentBatchSize++;
-        long startTime = DEBUG_PERFORMANCE ? System.nanoTime() : 0;
-
-        int currentTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-        if (DEBUG_MODE) {
-            CraftGuideLog.log("[WARNING] Current texture is " + currentTexture + ", not texture atlas. Resetting...");
-        }
-
-        // Warn if batch is getting large
-        if (DEBUG_MODE && currentBatchSize == 1) {
-            batchStartTime = System.currentTimeMillis();
-        }
-        if (DEBUG_MODE && currentBatchSize == BATCH_WARNING_THRESHOLD) {
-            long batchDuration = System.currentTimeMillis() - batchStartTime;
-            CraftGuideLog.log("[BATCH_WARNING] Rendered " + BATCH_WARNING_THRESHOLD +
-                    " items in " + batchDuration + "ms - GL state may accumulate issues");
-        }
-
-        if (DEBUG_MODE) {
-            CraftGuideLog.log("========================================");
-            CraftGuideLog.log("[RENDER_START] Attempt #" + totalRenderAttempts +
-                    " (Batch: " + currentBatchSize + ")");
-        }
-
-        // === STEP 1: Validate ItemStack ===
-        if (itemStack == null || itemStack.isEmpty()) {
-            if (DEBUG_MODE) {
-                CraftGuideLog.log("[VALIDATION] ItemStack is " + (itemStack == null ? "NULL" : "EMPTY"));
-                CraftGuideLog.log("[RENDER_ABORT] Nothing to render");
-                CraftGuideLog.log("========================================\n");
-            }
-            return;
-        }
-
-        String itemId = getItemIdentifier(itemStack);
-        itemRenderCounts.put(itemId, itemRenderCounts.getOrDefault(itemId, 0) + 1);
-
-        // CRITICAL: Force GL state to known good values BEFORE anything else
-        // This protects against state pollution from previous rendering operations
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
-        );
-        GlStateManager.disableLighting();
-        GlStateManager.disableAlpha();
-        RenderHelper.disableStandardItemLighting();
-
-        if (DEBUG_MODE) {
-            CraftGuideLog.log("[ITEM_INFO]");
-            CraftGuideLog.log("  Registry Name: " + itemStack.getItem().getRegistryName());
-            CraftGuideLog.log("  Metadata: " + itemStack.getMetadata());
-            CraftGuideLog.log("  Stack Size: " + itemStack.getCount());
-            CraftGuideLog.log("  Position: [x=" + x + ", y=" + y + "]");
-            CraftGuideLog.log("  Render Overlay: " + renderOverlay);
-            CraftGuideLog.log("  Times Rendered: " + itemRenderCounts.get(itemId));
-        }
-
-        // === STEP 2: Get RenderItem ===
-        RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
-        if (itemRenderer == null) {
-            CraftGuideLog.log("[CRITICAL_ERROR] RenderItem is NULL! Cannot proceed.");
-            failedRenders++;
-            return;
-        }
-
-        if (DEBUG_MODE) {
-            CraftGuideLog.log("[RENDER_ITEM] Instance obtained: " + itemRenderer.getClass().getName());
-            CraftGuideLog.log("  zLevel: " + itemRenderer.zLevel);
-        }
-
-        // === STEP 3: Get and Analyze Model ===
-        IBakedModel bakedModel = null;
-        if (DEBUG_MODE && DEBUG_MODEL_INFO) {
-            try {
-                bakedModel = itemRenderer.getItemModelWithOverrides(itemStack, null, Minecraft.getMinecraft().player);
-                CraftGuideLog.log("[MODEL_INFO]");
-                CraftGuideLog.log("  Class: " + bakedModel.getClass().getName());
-                CraftGuideLog.log("  Is Built-in Renderer: " + bakedModel.isBuiltInRenderer());
-                CraftGuideLog.log("  Is GUI 3D: " + bakedModel.isGui3d());
-                CraftGuideLog.log("  Is Ambient Occlusion: " + bakedModel.isAmbientOcclusion());
-                CraftGuideLog.log("  Particle Texture: " + (bakedModel.getParticleTexture() != null ?
-                        bakedModel.getParticleTexture().getIconName() : "null"));
-
-                // Check for missing model
-                if (bakedModel.getClass().getSimpleName().contains("Missing")) {
-                    CraftGuideLog.log("  [WARNING] This appears to be a MISSING MODEL!");
-                }
-            } catch (Exception e) {
-                CraftGuideLog.log("[MODEL_ERROR] Failed to retrieve model: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
-        // === STEP 4: Log GL State BEFORE rendering ===
-        if (DEBUG_MODE && DEBUG_GL_STATE) {
-            logGLState("BEFORE_RENDER");
-        }
-
-        // === STEP 5: Perform Rendering ===
-        GlStateManager.pushMatrix();
-        if (DEBUG_MODE) CraftGuideLog.log("[GL_STATE] Matrix pushed");
-
-        boolean renderSuccessful = false;
-        Exception caughtException = null;
-
-        try {
-            if (DEBUG_MODE) CraftGuideLog.log("[RENDER_CALL] Calling renderItemAndEffectIntoGUI...");
-
-            // Main render call
-            itemRenderer.renderItemAndEffectIntoGUI(itemStack, x, y);
-
-            if (DEBUG_MODE) CraftGuideLog.log("[RENDER_CALL] ✓ Main render completed");
-
-            // Overlay render
-            if (renderOverlay) {
-                if (DEBUG_MODE) CraftGuideLog.log("[RENDER_CALL] Rendering overlay...");
-                itemRenderer.renderItemOverlayIntoGUI(
-                        Minecraft.getMinecraft().fontRenderer,
-                        itemStack, x, y, null
-                );
-                if (DEBUG_MODE) CraftGuideLog.log("[RENDER_CALL] ✓ Overlay render completed");
-            }
-
-            renderSuccessful = true;
-            successfulRenders++;
-
-        } catch (Exception e) {
-            caughtException = e;
-            failedRenders++;
-
-            CraftGuideLog.log("[RENDER_EXCEPTION] ✗ Exception during rendering!");
-            CraftGuideLog.log("  Exception Type: " + e.getClass().getName());
-            CraftGuideLog.log("  Message: " + e.getMessage());
-
-            logItemRenderException(itemStack, e);
-
-            // Try to draw error indicator
-            try {
-                drawItemStackError(x, y);
-            } catch (Exception e2) {
-                CraftGuideLog.log("[ERROR_INDICATOR] Failed to draw error texture: " + e2.getMessage());
-            }
-
-        } finally {
-            // === STEP 6: Cleanup and State Reset ===
-            if (DEBUG_MODE) CraftGuideLog.log("[CLEANUP] Restoring GL state...");
-
-            // Pop matrix first
-            GlStateManager.popMatrix();
-
-            // Reset all GL state that item rendering might have changed
-            GlStateManager.disableLighting();
-            GlStateManager.disableAlpha();
-            GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
-            );
-            GlStateManager.disableDepth();
-            GlStateManager.disableRescaleNormal();
-            GlStateManager.enableTexture2D();
-
-            // Disable item lighting
-            RenderHelper.disableStandardItemLighting();
-
-            // Reset color to white (important!)
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-
-            // CRITICAL: Restore texture binding to blocks atlas
-            // This MUST be the last operation to ensure it's not overridden
-            Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-
-            if (DEBUG_MODE) {
-                // Verify the fix worked
-                int textureAfterFix = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-                CraftGuideLog.log("[CLEANUP] ✓ State reset complete - Texture after fix: " + textureAfterFix);
-            }
-        }
-
-        // === STEP 7: Log GL State AFTER rendering ===
-        if (DEBUG_MODE && DEBUG_GL_STATE) {
-            logGLState("AFTER_RENDER");
-        }
-
-        // === STEP 8: Performance Summary ===
-        if (DEBUG_MODE) {
-            if (DEBUG_PERFORMANCE) {
-                long duration = (System.nanoTime() - startTime) / 1000; // microseconds
-                CraftGuideLog.log("[PERFORMANCE] Render took " + duration + " μs");
-            }
-
-            CraftGuideLog.log("[RENDER_RESULT] " + (renderSuccessful ? "✓ SUCCESS" : "✗ FAILED"));
-            CraftGuideLog.log("========================================\n");
-        }
-
-        // SUPER CRITICAL: Force texture rebind one final time
-        // This is necessary because some items (especially TESR/BuiltInModel items like beds)
-        // may change texture bindings AFTER the finally block completes
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-    }
-
     public void drawItemStack(ItemStack itemStack, int x, int y) {
         drawItemStack(itemStack, x, y, true);
     }
 
-    /**
-     * Logs detailed GL state information for debugging.
-     */
-    private void logGLState(String phase) {
-        CraftGuideLog.log("[GL_STATE_" + phase + "]");
+    public void drawItemStack(ItemStack itemStack, int x, int y, boolean renderOverlay) {
+        if (itemStack == null) {
+            return;
+        }
+
+        boolean error = true;
+
+        int initialMatrixStackDepth = prepareGlForItemRender(x, y);
 
         try {
-            // Texture state
-            int currentTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-            CraftGuideLog.log("  Texture Bound: " + currentTexture);
-            CraftGuideLog.log("  Texture 2D: " + (GL11.glIsEnabled(GL11.GL_TEXTURE_2D) ? "ENABLED" : "DISABLED"));
+            if (itemStack.getItem() != null) {
+                itemStack = renderItem(itemStack, renderOverlay);
 
-            // Blending
-            CraftGuideLog.log("  Blend: " + (GL11.glIsEnabled(GL11.GL_BLEND) ? "ENABLED" : "DISABLED"));
-            if (GL11.glIsEnabled(GL11.GL_BLEND)) {
-                CraftGuideLog.log("    Src Factor: " + GL11.glGetInteger(GL11.GL_BLEND_SRC));
-                CraftGuideLog.log("    Dst Factor: " + GL11.glGetInteger(GL11.GL_BLEND_DST));
+                error = false;
             }
-
-            // Depth test
-            CraftGuideLog.log("  Depth Test: " + (GL11.glIsEnabled(GL11.GL_DEPTH_TEST) ? "ENABLED" : "DISABLED"));
-            CraftGuideLog.log("  Depth Mask: " + GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK));
-
-            // Lighting
-            CraftGuideLog.log("  Lighting: " + (GL11.glIsEnabled(GL11.GL_LIGHTING) ? "ENABLED" : "DISABLED"));
-
-            // Alpha test
-            CraftGuideLog.log("  Alpha Test: " + (GL11.glIsEnabled(GL11.GL_ALPHA_TEST) ? "ENABLED" : "DISABLED"));
-
-            // Cull face
-            CraftGuideLog.log("  Cull Face: " + (GL11.glIsEnabled(GL11.GL_CULL_FACE) ? "ENABLED" : "DISABLED"));
-
-            // Current color (requires 16 float buffer for some drivers)
-            try {
-                FloatBuffer colorBuffer = BufferUtils.createFloatBuffer(16);
-                GL11.glGetFloat(GL11.GL_CURRENT_COLOR, colorBuffer);
-                CraftGuideLog.log("  Current Color: [R=" + colorBuffer.get(0) +
-                        ", G=" + colorBuffer.get(1) +
-                        ", B=" + colorBuffer.get(2) +
-                        ", A=" + colorBuffer.get(3) + "]");
-            } catch (Exception e) {
-                CraftGuideLog.log("  Current Color: <unable to query>");
-            }
-
         } catch (Exception e) {
-            CraftGuideLog.log("  [ERROR] Failed to query GL state: " + e.getMessage());
+            logItemRenderException(itemStack, e);
+        } catch (Error e) {
+            CraftGuideLog.log(e);
+            throw e;
+        } finally {
+            fixGlState(initialMatrixStackDepth);
+        }
+
+        if (error) {
+            drawItemStackError(x, y);
         }
     }
 
-    /**
-     * Gets a unique identifier for an ItemStack for tracking purposes.
-     */
-    private String getItemIdentifier(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return "null";
-        return stack.getItem().getRegistryName() + "@" + stack.getMetadata();
-    }
-
-    /**
-     * Logs exception details for failed item renders.
-     */
     private void logItemRenderException(ItemStack itemStack, Exception e) {
         if (!hasLogged(itemStack)) {
-            CraftGuideLog.log("========== RENDER EXCEPTION DETAILS ==========");
-            CraftGuideLog.log("Failed to render ItemStack:");
-
-            if (itemStack == null) {
-                CraftGuideLog.log("  ItemStack: null");
-            } else {
-                CraftGuideLog.log("  Item ID: " + ForgeRegistries.ITEMS.getKey(itemStack.getItem()));
-                CraftGuideLog.log("  Damage: " + CommonUtilities.getItemDamage(itemStack));
-                CraftGuideLog.log("  Stack Size: " + itemStack.getCount());
-                CraftGuideLog.log("  Has NBT: " + itemStack.hasTagCompound());
-                if (itemStack.hasTagCompound()) {
-                    CraftGuideLog.log("  NBT: " + itemStack.getTagCompound());
-                }
-            }
-
-            CraftGuideLog.log("\nStack Trace:");
+            CraftGuideLog.log("Failed to render ItemStack {" + (
+                    itemStack == null ? "null" : (
+                            "itemID = " + ForgeRegistries.ITEMS.getKey(itemStack.getItem()) +
+                                    ", itemDamage = " + CommonUtilities.getItemDamage(itemStack) +
+                                    ", stackSize = " + itemStack.getCount())) +
+                    "} (Further stack traces from this particular ItemStack instance will not be logged)");
             CraftGuideLog.log(e);
-            CraftGuideLog.log("(Further exceptions from this ItemStack will be suppressed)");
-            CraftGuideLog.log("==============================================\n");
         }
     }
 
@@ -598,6 +250,41 @@ public class GuiRenderer extends RendererBase implements Renderer {
         }
 
         return itemStack;
+    }
+
+    private int prepareGlForItemRender(int x, int y) {
+        GlStateManager.enableDepth();
+        RenderHelper.enableGUIStandardItemLighting();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(x, y, 0.0F);
+        GlStateManager.color(1, 1, 1, 1);
+        GlStateManager.enableRescaleNormal();
+        itemRenderer.zLevel = 100.0F;
+
+        int initialMatrixStackDepth = GlStateManager.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
+        return initialMatrixStackDepth;
+    }
+
+    private void fixGlState(int initialMatrixStackDepth) {
+        int finalMatrixStackDepth = GlStateManager.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
+
+        // If something went wrong, and an exception was thrown after at least one matrix push,
+        //  fix it here, so that rendering errors do not affect later parts of the UI.
+        while (finalMatrixStackDepth > initialMatrixStackDepth) {
+            GlStateManager.popMatrix();
+            finalMatrixStackDepth--;
+        }
+
+        CraftGuide.side.stopTessellating();
+
+        itemRenderer.zLevel = 0.0F;
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.color(1, 1, 1, 1);
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableDepth();
+        GlStateManager.disableLighting();
+        GlStateManager.popMatrix();
     }
 
     private HashSet<ItemStack> loggedStacks = new HashSet<>();
@@ -619,9 +306,6 @@ public class GuiRenderer extends RendererBase implements Renderer {
     }
 
     private void drawItemStackError(int x, int y) {
-        if (DEBUG_MODE) {
-            CraftGuideLog.log("[ERROR_VISUAL] Drawing error indicator at [" + x + ", " + y + "]");
-        }
         itemError.render(this, x, y);
     }
 
@@ -653,13 +337,15 @@ public class GuiRenderer extends RendererBase implements Renderer {
         drawItemStack(stack, x, y);
     }
 
-    @Override
-    public void renderRect(int x, int y, int width, int height, NamedTexture texture) {
-        if (texture != null) {
-            setColor(255, 255, 255, 255);
-            drawTexturedRect((Texture) texture, x, y, width, height, 0, 0);
-        }
-    }
+	@Override
+	public void renderRect(int x, int y, int width, int height, NamedTexture texture)
+	{
+		if(texture != null)
+		{
+			setColor(255, 255, 255, 255);
+			drawTexturedRect((Texture)texture, x, y, width, height, 0, 0);
+		}
+	}
 
     @Override
     public void renderRect(int x, int y, int width, int height, int red, int green, int blue, int alpha) {
@@ -701,19 +387,40 @@ public class GuiRenderer extends RendererBase implements Renderer {
         GlStateManager.blendFunc(770, 771);
         GlStateManager.disableLighting();
 
-        GL11.glBegin(GL11.GL_QUADS);
-        glColor1i(topLeftColor_argb);
-        GL11.glVertex2i(x, y);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
 
-        glColor1i(bottomLeftColor_argb);
-        GL11.glVertex2i(x, y + height);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
-        glColor1i(bottomRightColor_argb);
-        GL11.glVertex2i(x + width, y + height);
+        buffer.pos(x, y, 0).color(
+                (topLeftColor_argb >> 16) & 0xFF,
+                (topLeftColor_argb >> 8) & 0xFF,
+                topLeftColor_argb & 0xFF,
+                (topLeftColor_argb >> 24) & 0xFF
+        ).endVertex();
 
-        glColor1i(topRightColor_argb);
-        GL11.glVertex2i(x + width, y);
-        GL11.glEnd();
+        buffer.pos(x, y + height, 0).color(
+                (bottomLeftColor_argb >> 16) & 0xFF,
+                (bottomLeftColor_argb >> 8) & 0xFF,
+                bottomLeftColor_argb & 0xFF,
+                (bottomLeftColor_argb >> 24) & 0xFF
+        ).endVertex();
+
+        buffer.pos(x + width, y + height, 0).color(
+                (bottomRightColor_argb >> 16) & 0xFF,
+                (bottomRightColor_argb >> 8) & 0xFF,
+                bottomRightColor_argb & 0xFF,
+                (bottomRightColor_argb >> 24) & 0xFF
+        ).endVertex();
+
+        buffer.pos(x + width, y, 0).color(
+                (topRightColor_argb >> 16) & 0xFF,
+                (topRightColor_argb >> 8) & 0xFF,
+                topRightColor_argb & 0xFF,
+                (topRightColor_argb >> 24) & 0xFF
+        ).endVertex();
+
+        tessellator.draw();
 
         GlStateManager.enableLighting();
         GlStateManager.enableTexture2D();
@@ -732,7 +439,7 @@ public class GuiRenderer extends RendererBase implements Renderer {
 
     public List<String> getItemNameandInformation(ItemStack stack) {
         if (!invalidStacks.containsKey(stack)) {
-            if (!stack.isEmpty()) {
+            if (stack.getItem() != null) {
                 try {
                     return getTooltip(stack);
                 } catch (Exception e) {
@@ -762,44 +469,5 @@ public class GuiRenderer extends RendererBase implements Renderer {
     @Override
     public double getClock() {
         return frameStartTime;
-    }
-
-    /**
-     * Prints a debug report of all rendered items and their statistics.
-     * Call this method to get a summary of rendering activity.
-     */
-    public static void printDebugReport() {
-        CraftGuideLog.log("\n==================== RENDER DEBUG REPORT ====================");
-        CraftGuideLog.log("Total Render Attempts: " + totalRenderAttempts);
-        CraftGuideLog.log("Successful Renders: " + successfulRenders +
-                " (" + (totalRenderAttempts > 0 ? (successfulRenders * 100 / totalRenderAttempts) : 0) + "%)");
-        CraftGuideLog.log("Failed Renders: " + failedRenders +
-                " (" + (totalRenderAttempts > 0 ? (failedRenders * 100 / totalRenderAttempts) : 0) + "%)");
-
-        if (!itemRenderCounts.isEmpty()) {
-            CraftGuideLog.log("\n--- Item Render Statistics ---");
-            itemRenderCounts.entrySet().stream()
-                    .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-                    .limit(20)
-                    .forEach(entry -> {
-                        CraftGuideLog.log("  " + entry.getKey() + ": " + entry.getValue() + " times");
-                    });
-            if (itemRenderCounts.size() > 20) {
-                CraftGuideLog.log("  ... and " + (itemRenderCounts.size() - 20) + " more items");
-            }
-        }
-
-        CraftGuideLog.log("=============================================================\n");
-    }
-
-    /**
-     * Resets all debug counters. Useful for testing specific scenarios.
-     */
-    public static void resetDebugCounters() {
-        totalRenderAttempts = 0;
-        successfulRenders = 0;
-        failedRenders = 0;
-        itemRenderCounts.clear();
-        CraftGuideLog.log("[DEBUG] All render counters have been reset.");
     }
 }
