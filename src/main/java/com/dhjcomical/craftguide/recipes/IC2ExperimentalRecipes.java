@@ -1,35 +1,21 @@
 package com.dhjcomical.craftguide.recipes;
 
-import ic2.api.item.IC2Items;
-import ic2.api.recipe.*;
-
-import java.util.*;
-
-import net.minecraft.item.ItemStack;
-
-import com.dhjcomical.craftguide.api.CraftGuideAPIObject;
+import com.dhjcomical.craftguide.api.slotTypes.ChanceSlot;
 import com.dhjcomical.craftguide.api.slotTypes.EUSlot;
 import com.dhjcomical.craftguide.api.slotTypes.ExtraSlot;
 import com.dhjcomical.craftguide.api.slotTypes.ItemSlot;
-import com.dhjcomical.craftguide.api.RecipeGenerator;
-import com.dhjcomical.craftguide.api.RecipeProvider;
-import com.dhjcomical.craftguide.api.RecipeTemplate;
 import com.dhjcomical.craftguide.api.slotTypes.Slot;
-import com.dhjcomical.craftguide.api.SlotType;
-import com.dhjcomical.craftguide.api.StackInfo;
+import ic2.api.item.IC2Items;
+import ic2.api.recipe.*;
+import net.minecraft.item.ItemStack;
+import com.dhjcomical.craftguide.api.*;
+import com.dhjcomical.craftguide.api.slotTypes.*;
+
+import java.util.*;
 
 public class IC2ExperimentalRecipes extends CraftGuideAPIObject implements RecipeProvider {
 
-    public interface AdditionalMachines {
-        Object[] extraMacerators();
-        Object[] extraExtractors();
-        Object[] extraCompressors();
-    }
-
-    public static List<AdditionalMachines> additionalMachines = new ArrayList<>();
-
     public IC2ExperimentalRecipes() {
-        // 构造函数中的依赖注入保持不变
         StackInfo.addSource(new IC2GeneratorFuel());
         StackInfo.addSource(new IC2Power());
         StackInfo.addSource(new IC2ExperimentalAmplifiers());
@@ -41,143 +27,132 @@ public class IC2ExperimentalRecipes extends CraftGuideAPIObject implements Recip
             return;
         }
 
-        addMachineRecipes(generator, IC2Items.getItem("te", "macerator"), getMacerator(), Recipes.macerator);
-        addMachineRecipes(generator, IC2Items.getItem("te", "extractor"), getExtractor(), Recipes.extractor);
-        addMachineRecipes(generator, IC2Items.getItem("te", "compressor"), getCompressor(), Recipes.compressor);
-        addMachineRecipes(generator, IC2Items.getItem("te", "centrifuge"), Recipes.centrifuge);
-        addMachineRecipes(generator, IC2Items.getItem("te", "block_cutter"), Recipes.blockcutter);
-        addMachineRecipes(generator, IC2Items.getItem("te", "blast_furnace"), Recipes.blastfurnace);
-        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerExtruding);
-        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerCutting);
-        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerRolling);
-        addMachineRecipes(generator, IC2Items.getItem("te", "ore_washing_plant"), Recipes.oreWashing);
+        addMachineRecipes(generator, IC2Items.getItem("te", "macerator"), Recipes.macerator, 2, 800);
+        addMachineRecipes(generator, IC2Items.getItem("te", "extractor"), Recipes.extractor, 2, 400);
+        addMachineRecipes(generator, IC2Items.getItem("te", "compressor"), Recipes.compressor, 2, 400);
+        addMachineRecipes(generator, IC2Items.getItem("te", "centrifuge"), Recipes.centrifuge, 5, 2500);
+        addMachineRecipes(generator, IC2Items.getItem("te", "block_cutter"), Recipes.blockcutter, 8, 1000);
+        addMachineRecipes(generator, IC2Items.getItem("te", "blast_furnace"), Recipes.blastfurnace, 128, 30000);
+        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerExtruding, 10, 400);
+        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerCutting, 10, 400);
+        addMachineRecipes(generator, IC2Items.getItem("te", "metal_former"), Recipes.metalformerRolling, 10, 400);
+        addMachineRecipes(generator, IC2Items.getItem("te", "ore_washing_plant"), Recipes.oreWashing, 16, 2000);
 
         addScrapboxOutput(generator, IC2Items.getItem("crafting", "scrap_box"), Recipes.scrapboxDrops);
     }
 
-    private Object getMacerator() {
-        ArrayList<Object> macerator = new ArrayList<>();
-        macerator.add(IC2Items.getItem("te", "macerator"));
-        for(AdditionalMachines additional: additionalMachines) {
-            Object[] machines = additional.extraMacerators();
-            if(machines != null) {
-                macerator.addAll(Arrays.asList(machines));
-            }
-        }
-        return macerator;
-    }
-
-    private Object getExtractor() {
-        ArrayList<Object> extractor = new ArrayList<>();
-        extractor.add(IC2Items.getItem("te", "extractor"));
-
-        for(AdditionalMachines additional: additionalMachines) {
-            Object[] machines = additional.extraExtractors();
-            if(machines != null) {
-                extractor.addAll(Arrays.asList(machines));
-            }
-        }
-        return extractor;
-    }
-
-    private Object getCompressor() {
-        ArrayList<Object> compressor = new ArrayList<>();
-        compressor.add(IC2Items.getItem("te", "compressor"));
-
-        for(AdditionalMachines additional: additionalMachines) {
-            Object[] machines = additional.extraCompressors();
-            if(machines != null) {
-                compressor.addAll(Arrays.asList(machines));
-            }
-        }
-        return compressor;
-    }
-
-    private void addMachineRecipes(RecipeGenerator generator, ItemStack type, IMachineRecipeManager recipeManager) {
-        addMachineRecipes(generator, type, type, recipeManager);
-    }
-
-    private void addMachineRecipes(RecipeGenerator generator, ItemStack type, Object machine, IMachineRecipeManager recipeManager) {
-        addMachineRecipes(generator, type, machine, recipeManager, 2, 800);
-    }
-
-
-    private void addMachineRecipes(RecipeGenerator generator, ItemStack type, Object machine, IMachineRecipeManager<IRecipeInput, Collection<ItemStack>, ItemStack> recipeManager, int eut, int totalEU) {
-
+    private void addMachineRecipes(RecipeGenerator generator, ItemStack machineStack, IMachineRecipeManager<IRecipeInput, Collection<ItemStack>, ItemStack> recipeManager, int eut, int totalEU) {
         if (recipeManager == null || !recipeManager.isIterable()) return;
 
+        Set<String> addedRecipeSignatures = new HashSet<>();
         int maxOutput = 1;
         for (MachineRecipe<IRecipeInput, Collection<ItemStack>> recipe : recipeManager.getRecipes()) {
-            Collection<ItemStack> output = recipe.getOutput();
             if (recipe.getOutput() != null) {
-                int currentSize = 0;
-                for (ItemStack stack : recipe.getOutput()) {
-                    currentSize++;
-                }
-                maxOutput = Math.max(maxOutput, currentSize);
+                maxOutput = Math.max(maxOutput, recipe.getOutput().size());
             }
         }
 
-        int columns = (maxOutput + 1) / 2;
-        Slot[] recipeSlots = new Slot[maxOutput + 3];
-
-        recipeSlots[0] = new ItemSlot(columns > 1 ? 3 : 12, 21, 16, 16, true).drawOwnBackground();
-        recipeSlots[1] = new ExtraSlot(columns > 1 ? 23 : 31, 30, 16, 16, machine).clickable().showName().setSlotType(SlotType.MACHINE_SLOT);
-        recipeSlots[2] = new EUSlot(columns > 1 ? 23 : 31, 12).setConstantPacketSize(eut).setConstantEUValue(-totalEU);
-
-        for (int i = 0; i < maxOutput / 2; i++) {
-            recipeSlots[i * 2 + 3] = new ItemSlot((columns > 1 ? 41 : 50) + i * 18, 12, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground();
-            recipeSlots[i * 2 + 4] = new ItemSlot((columns > 1 ? 41 : 50) + i * 18, 30, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground();
+        List<Slot> recipeSlots = new ArrayList<>();
+        recipeSlots.add(new ItemSlot(3, 21, 16, 16, true).drawOwnBackground());
+        recipeSlots.add(new ExtraSlot(23, 30, 16, 16, machineStack).clickable().showName().setSlotType(SlotType.MACHINE_SLOT));
+        recipeSlots.add(new EUSlot(23, 12).setConstantPacketSize(eut).setConstantEUValue(-totalEU));
+        for (int i = 0; i < maxOutput; i++) {
+            int x = 41 + (i / 2) * 18;
+            int y = 12 + (i % 2) * 18;
+            recipeSlots.add(new ItemSlot(x, y, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground());
         }
 
-        if ((maxOutput & 1) == 1) {
-            recipeSlots[columns * 2 + 1] = new ItemSlot((columns > 1 ? 23 : 32) + columns * 18, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground();
-        }
-
-        RecipeTemplate template = generator.createRecipeTemplate(recipeSlots, type);
+        RecipeTemplate template = generator.createRecipeTemplate(recipeSlots.toArray(new Slot[0]), machineStack);
 
         for (MachineRecipe<IRecipeInput, Collection<ItemStack>> recipe : recipeManager.getRecipes()) {
             IRecipeInput recipeInput = recipe.getInput();
             Collection<ItemStack> recipeOutput = recipe.getOutput();
 
-            if (recipeInput == null || recipeOutput == null || recipeInput.getInputs().isEmpty()) {
+            if (recipeInput == null || recipeOutput == null || recipeInput.getInputs().isEmpty() || recipeOutput.isEmpty()) {
                 continue;
             }
 
-            List<ItemStack> inputs = new ArrayList<>();
-            for (ItemStack s : recipeInput.getInputs()) {
-                ItemStack stack = s.copy();
-                stack.setCount(recipeInput.getAmount());
-                inputs.add(stack);
-            }
+            String recipeSignature = generateRecipeSignature(recipeInput, recipeOutput);
 
-            Object[] recipeContents = new Object[maxOutput + 3];
-            recipeContents[0] = inputs;
-            recipeContents[1] = machine;
-            recipeContents[2] = null;
-            List<ItemStack> outputList = new ArrayList<>(recipeOutput);
+            if (addedRecipeSignatures.add(recipeSignature)) {
+                Object processedInput = processRecipeInput(recipeInput);
+                if (processedInput == null) continue;
 
-            for (int i = 0; i < Math.min(maxOutput, outputList.size()); i++) {
-                recipeContents[i + 3] = outputList.get(i);
+                Object[] recipeContents = new Object[recipeSlots.size()];
+                recipeContents[0] = processedInput;
+
+                int outputIndex = 0;
+                for (ItemStack outputStack : recipeOutput) {
+                    if (outputIndex < maxOutput) {
+                        recipeContents[outputIndex + 3] = outputStack;
+                        outputIndex++;
+                    }
+                }
+                generator.addRecipe(template, recipeContents);
             }
-            generator.addRecipe(template, recipeContents);
+        }
+    }
+
+    /**
+     * FIX #2: Creates a robust, order-independent signature for a recipe to prevent duplicates.
+     */
+    private String generateRecipeSignature(IRecipeInput input, Collection<ItemStack> output) {
+        StringBuilder signature = new StringBuilder();
+
+        // Sort inputs by registry name and then metadata to handle order variations
+        List<ItemStack> sortedInputs = new ArrayList<>(input.getInputs());
+        sortedInputs.sort(Comparator.comparing((ItemStack s) -> s.getItem().getRegistryName().toString()).thenComparingInt(ItemStack::getMetadata));
+
+        for (ItemStack stack : sortedInputs) {
+            signature.append(stack.getItem().getRegistryName().toString()).append(":").append(stack.getMetadata()).append(",");
+        }
+        signature.append("@").append(input.getAmount());
+        signature.append("->");
+
+        // Sort outputs as well for consistency
+        List<ItemStack> sortedOutputs = new ArrayList<>(output);
+        sortedOutputs.sort(Comparator.comparing((ItemStack s) -> s.getItem().getRegistryName().toString()).thenComparingInt(ItemStack::getMetadata));
+
+        for (ItemStack stack : sortedOutputs) {
+            signature.append(stack.getItem().getRegistryName().toString()).append(":").append(stack.getMetadata()).append("x").append(stack.getCount()).append(",");
+        }
+
+        return signature.toString();
+    }
+
+    private Object processRecipeInput(IRecipeInput input) {
+        List<ItemStack> inputStacks = input.getInputs();
+        if (inputStacks.isEmpty()) return null;
+
+        for (ItemStack stack : inputStacks) {
+            if (!stack.isEmpty()) {
+                stack.setCount(input.getAmount());
+            }
+        }
+
+        if (inputStacks.size() == 1) {
+            return inputStacks.get(0);
+        } else {
+            return inputStacks;
         }
     }
 
     private void addScrapboxOutput(RecipeGenerator generator, ItemStack scrapbox, IScrapboxManager scrapboxDrops) {
-        Slot[] recipeSlots = { /* ... */ };
+        if (scrapbox == null || scrapbox.isEmpty() || scrapboxDrops == null) return;
+        Slot[] recipeSlots = {
+                new ItemSlot(12, 21, 16, 16, true).setSlotType(SlotType.INPUT_SLOT).drawOwnBackground(),
+                new ExtraSlot(31, 21, 16, 16, scrapbox).clickable().showName().setSlotType(SlotType.MACHINE_SLOT),
+                new ChanceSlot(50, 21, 16, 16).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(),
+        };
         RecipeTemplate template = generator.createRecipeTemplate(recipeSlots, scrapbox);
-
         for (Map.Entry<ItemStack, Float> entry : scrapboxDrops.getDrops().entrySet()) {
-            Object[] recipeContents = new Object[]{
-                    scrapbox,
-                    new Object[]{
-                            entry.getKey(),
-                            (int) (entry.getValue() * 100000),
-                    },
-            };
+            ItemStack output = entry.getKey();
+            if (output == null || output.isEmpty()) continue;
+            Object[] chanceOutput = new Object[] { output, (int)(entry.getValue() * 100_000) };
+            Object[] recipeContents = new Object[3];
+            recipeContents[0] = scrapbox;
+            recipeContents[2] = chanceOutput;
             generator.addRecipe(template, recipeContents);
         }
     }
-
 }

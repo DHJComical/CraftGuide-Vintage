@@ -16,6 +16,8 @@ import com.dhjcomical.craftguide.api.StackInfoSource;
 import com.dhjcomical.craftguide.api.Util;
 import net.minecraft.util.NonNullList;
 
+import javax.annotation.Nullable;
+
 public class CommonUtilities
 {
 	public static Field getPrivateField(Class<?> fromClass, String... names) throws NoSuchFieldException
@@ -376,23 +378,30 @@ public class CommonUtilities
 		}
 	}
 
-	public static boolean checkItemStackMatch(ItemStack first, ItemStack second)
-	{
-		if(first == null || second == null)
-		{
-			return first == second;
-		}
+    public static boolean checkItemStackMatch(@Nullable ItemStack first, @Nullable ItemStack second)
+    {
+        // Handle null/empty cases
+        if (first == null || first.isEmpty()) {
+            return second == null || second.isEmpty();
+        }
+        if (second == null || second.isEmpty()) {
+            return false;
+        }
 
-		return first.getItem() == second.getItem()
-			&& (
-				getItemDamage(first) == CraftGuide.DAMAGE_WILDCARD ||
-				getItemDamage(second) == CraftGuide.DAMAGE_WILDCARD ||
-				getItemDamage(first) == getItemDamage(second)
-			)
-			&& (
-				!first.hasTagCompound() ||
-				!second.hasTagCompound() ||
-				ItemStack.areItemStackTagsEqual(first, second)
-			);
-	}
+        if (first.getItem() != second.getItem()) {
+            return false;
+        }
+
+        boolean damageMatches = (
+                getItemDamage(first) == CraftGuide.DAMAGE_WILDCARD ||
+                        getItemDamage(second) == CraftGuide.DAMAGE_WILDCARD ||
+                        getItemDamage(first) == getItemDamage(second)
+        );
+
+        if (!damageMatches) {
+            return false;
+        }
+
+        return ItemStack.areItemStackTagsEqual(first, second);
+    }
 }

@@ -1,8 +1,9 @@
 package com.dhjcomical.craftguide.recipes;
 
-import java.util.ArrayList;
-import java.util.TreeSet;
-
+import com.dhjcomical.craftguide.api.ConstructedRecipeTemplate;
+import com.dhjcomical.craftguide.api.RecipeGenerator;
+import com.dhjcomical.craftguide.api.RecipeProvider;
+import com.dhjcomical.craftguide.itemtype.ItemType;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -10,128 +11,83 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.brewing.IBrewingRecipe;
-import net.minecraftforge.common.brewing.VanillaBrewingRecipe;
-import com.dhjcomical.craftguide.api.ConstructedRecipeTemplate;
-import com.dhjcomical.craftguide.api.CraftGuideAPIObject;
-import com.dhjcomical.craftguide.api.RecipeGenerator;
-import com.dhjcomical.craftguide.api.RecipeProvider;
-import com.dhjcomical.craftguide.itemtype.ItemType;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class BrewingRecipes extends CraftGuideAPIObject implements RecipeProvider
-{
-	private static final int MAX_FULL_ITERATIONS = 10;
-	private static final int MAX_VANILLA_ONLY_ITERATIONS = 100;
+import java.util.HashSet;
+import java.util.Set;
 
-	@Override
-	public void generateRecipes(RecipeGenerator generator)
-	{
-		TreeSet<ItemType> ingredients = new TreeSet<>();
-		TreeSet<ItemType> inputs = new TreeSet<>();
+public class BrewingRecipes implements RecipeProvider {
 
+    @Override
+    public void generateRecipes(RecipeGenerator generator) {
+        Set<ItemType> allIngredients = new HashSet<>();
+        Set<ItemType> allKnownPotions = new HashSet<>();
+
+        // 1. Gather all valid ingredients and initial potion types
         for (Item item : ForgeRegistries.ITEMS.getValuesCollection()) {
-            NonNullList<ItemStack> itemSet = NonNullList.create();
+            NonNullList<ItemStack> subItems = NonNullList.create();
+            item.getSubItems(CreativeTabs.SEARCH, subItems);
 
-            item.getSubItems(CreativeTabs.SEARCH, itemSet);
+            for (ItemStack stack : subItems) {
+                if (stack.isEmpty()) continue;
 
-            for (ItemStack stack : itemSet) {
-                if (!stack.isEmpty()) {
-                    if (BrewingRecipeRegistry.isValidIngredient(stack))
-                        ingredients.add(ItemType.getInstance(stack));
-                    if (BrewingRecipeRegistry.isValidInput(stack))
-                        inputs.add(ItemType.getInstance(stack));
+                if (BrewingRecipeRegistry.isValidIngredient(stack)) {
+                    ItemType type = ItemType.getInstance(stack);
+                    if (type != null) allIngredients.add(type);
+                }
+
+                if (BrewingRecipeRegistry.isValidInput(stack)) {
+                    ItemType type = ItemType.getInstance(stack);
+                    if (type != null) allKnownPotions.add(type);
                 }
             }
         }
 
-		ItemStack brewingStand = new ItemStack(Items.BREWING_STAND);
-		ConstructedRecipeTemplate template = generator.buildTemplate(brewingStand)
-				.item().item().nextColumn(1)
-				.machineItem().nextColumn(1)
-				.outputItem().finishTemplate();
+        ItemStack brewingStand = new ItemStack(Items.BREWING_STAND);
+        ConstructedRecipeTemplate template = generator.buildTemplate(brewingStand)
+                .item().item().nextColumn(1)
+                .machineItem().nextColumn(1)
+                .outputItem().finishTemplate();
 
-		TreeSet<ItemType> discoveredInputs = new TreeSet<>();
-		TreeSet<ItemType> inputsToTry = inputs;
-		int iterations = 0;
+        // 2. Iteratively discover new potions
+        Set<ItemType> newlyDiscoveredPotions;
+        Set<ItemType> potionsToTestInNextLoop = new HashSet<>(allKnownPotions);
 
-		do
-		{
-			discoveredInputs = new TreeSet<>();
+        for (int i = 0; i < 10 && !potionsToTestInNextLoop.isEmpty(); i++) {
+            newlyDiscoveredPotions = new HashSet<>();
 
-			for(IBrewingRecipe recipe: BrewingRecipeRegistry.getRecipes())
-			{
-				for(ItemType ingredient: ingredients)
-				{
-					final ItemStack ingredientStack = ingredient.getDisplayStack();
-					if(recipe.isIngredient(ingredientStack))
-					{
-						for(ItemType input: inputsToTry)
-						{
-							final ItemStack inputStack = input.getDisplayStack();
-							if(recipe.isInput(inputStack))
-							{
-								ItemStack result = recipe.getOutput(inputStack, ingredientStack);
-								if(result != null)
-								{
-									ItemType resultType = ItemType.getInstance(result);
-									if(!inputs.contains(resultType))
-									{
-										discoveredInputs.add(resultType);
-									}
+            for (IBrewingRecipe recipe : BrewingRecipeRegistry.getRecipes()) {
+                for (ItemType ingredientType : allIngredients) {
+                    ItemStack ingredientStack = ingredientType.getDisplayStack();
+                    if (!recipe.isIngredient(ingredientStack)) continue;
 
-									template.buildRecipe()
-										.item(ingredientStack).item(inputStack)
-										.item(brewingStand)
-										.item(result)
-										.addRecipe(generator);
-								}
-							}
-						}
-					}
-				}
-			}
-			inputs.addAll(discoveredInputs);
-			inputsToTry = discoveredInputs;
-		} while(!inputsToTry.isEmpty() && iterations++ < MAX_FULL_ITERATIONS);
+                    for (ItemType inputPotionType : potionsToTestInNextLoop) {
+                        ItemStack inputPotionStack = inputPotionType.getDisplayStack();
+                        if (!recipe.isInput(inputPotionStack)) continue;
 
-		IBrewingRecipe recipe = new VanillaBrewingRecipe();
-		do
-		{
-			discoveredInputs = new TreeSet<>();
+                        ItemStack resultStack = recipe.getOutput(inputPotionStack, ingredientStack);
 
-			for(ItemType ingredient: ingredients)
-			{
-				final ItemStack ingredientStack = ingredient.getDisplayStack();
-				if(recipe.isIngredient(ingredientStack))
-				{
-					for(ItemType input: inputsToTry)
-					{
-						final ItemStack inputStack = input.getDisplayStack();
-						if(recipe.isInput(inputStack))
-						{
-							ItemStack result = recipe.getOutput(inputStack, ingredientStack);
-							if(result != null)
-							{
-								ItemType resultType = ItemType.getInstance(result);
-								if(!inputs.contains(resultType))
-								{
-									discoveredInputs.add(resultType);
-								}
+                        if (resultStack != null && !resultStack.isEmpty()) {
+                            ItemType resultType = ItemType.getInstance(resultStack);
+                            if (resultType == null) continue;
 
-								template.buildRecipe()
-									.item(ingredientStack).item(inputStack)
-									.item(brewingStand)
-									.item(result)
-									.addRecipe(generator);
-							}
-						}
-					}
-				}
-			}
-			inputs.addAll(discoveredInputs);
-			inputsToTry = discoveredInputs;
-		} while(!inputsToTry.isEmpty() && iterations++ < MAX_VANILLA_ONLY_ITERATIONS);
+                            template.buildRecipe()
+                                    .item(ingredientStack)
+                                    .item(inputPotionStack)
+                                    .item(brewingStand)
+                                    .item(resultStack)
+                                    .addRecipe(generator);
 
-		generator.setDefaultTypeVisibility(brewingStand, false);
-	}
+                            if (allKnownPotions.add(resultType)) {
+                                newlyDiscoveredPotions.add(resultType);
+                            }
+                        }
+                    }
+                }
+            }
+            potionsToTestInNextLoop = newlyDiscoveredPotions;
+        }
+
+        generator.setDefaultTypeVisibility(brewingStand, false);
+    }
 }
