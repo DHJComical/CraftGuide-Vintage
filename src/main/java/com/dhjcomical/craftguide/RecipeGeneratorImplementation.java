@@ -44,18 +44,19 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
     private static Field advExpShapelessRecipe_input;
 
     // Fields for IC2 Classic
-    private static Class<?> advClassicRecipeClass; // Classic seems to use one AdvRecipe for both shaped and shapeless
+    private static Class<?> advClassicRecipeClass;
     private static Field advClassicRecipe_width, advClassicRecipe_height, advClassicRecipe_input;
 
     static {
         // Vanilla reflection
         try {
-            shapedRecipes_width = ShapedRecipes.class.getDeclaredField("recipeWidth"); shapedRecipes_width.setAccessible(true);
-            shapedRecipes_height = ShapedRecipes.class.getDeclaredField("recipeHeight"); shapedRecipes_height.setAccessible(true);
-            shapedRecipes_ingredients = ShapedRecipes.class.getDeclaredField("recipeItems"); shapedRecipes_ingredients.setAccessible(true);
-            shapelessRecipes_ingredients = ShapelessRecipes.class.getDeclaredField("recipeItems"); shapelessRecipes_ingredients.setAccessible(true);
-        } catch (Exception e) { CraftGuideLog.log(e, "Could not find vanilla recipe fields.", true); }
-
+            shapedRecipes_width = getField(ShapedRecipes.class, "recipeWidth", "field_77576_b", "g");
+            shapedRecipes_height = getField(ShapedRecipes.class, "recipeHeight", "field_77575_c", "h");
+            shapedRecipes_ingredients = getField(ShapedRecipes.class, "recipeItems", "field_77574_d", "i");
+            shapelessRecipes_ingredients = getField(ShapelessRecipes.class, "recipeItems", "field_77579_b", "b");
+        } catch (Exception e) {
+            CraftGuideLog.log(e, "Could not find vanilla recipe fields via reflection.", true);
+        }
         // Soft dependency check for IC2
         if (Loader.isModLoaded("ic2")) {
             // Try to load IC2 Experimental classes first
@@ -81,6 +82,18 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
                 }
             }
         }
+    }
+    private static Field getField(Class<?> targetClass, String... fieldNames) throws NoSuchFieldException {
+        for (String fieldName : fieldNames) {
+            try {
+                Field field = targetClass.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException e) {
+                // Ignore and try the next name
+            }
+        }
+        throw new NoSuchFieldException("Could not find any of the fields " + String.join(", ", fieldNames) + " in class " + targetClass.getName());
     }
 
     private Map<ItemStack, List<CraftGuideRecipe>> recipes = new HashMap<>();
