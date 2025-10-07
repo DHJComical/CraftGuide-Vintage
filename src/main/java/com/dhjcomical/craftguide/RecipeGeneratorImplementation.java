@@ -31,6 +31,7 @@ import com.dhjcomical.gui_craftguide.texture.Texture;
 import com.dhjcomical.gui_craftguide.texture.TextureClip;
 import ic2.core.recipe.AdvRecipe;
 import ic2.core.recipe.AdvShapelessRecipe;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -39,23 +40,45 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
     private final List<RecipeProvider> recipeProviders = new ArrayList<>();
     private static Field shapedRecipes_width, shapedRecipes_height, shapedRecipes_ingredients;
     private static Field shapelessRecipes_ingredients;
+
     private static Field advRecipe_width, advRecipe_height, advRecipe_input;
     private static Field advShapelessRecipe_input;
-
+    private static Class<?> advRecipeClass;
+    private static Class<?> advShapelessRecipeClass;
     static {
+        // Vanilla reflection - always runs
         try {
-            shapedRecipes_width = ShapedRecipes.class.getDeclaredField("recipeWidth"); shapedRecipes_width.setAccessible(true);
-            shapedRecipes_height = ShapedRecipes.class.getDeclaredField("recipeHeight"); shapedRecipes_height.setAccessible(true);
-            shapedRecipes_ingredients = ShapedRecipes.class.getDeclaredField("recipeItems"); shapedRecipes_ingredients.setAccessible(true);
-            shapelessRecipes_ingredients = ShapelessRecipes.class.getDeclaredField("recipeItems"); shapelessRecipes_ingredients.setAccessible(true);
-        } catch (Exception e) { CraftGuideLog.log(e, "Could not find vanilla recipe fields via reflection.", true); }
+            shapedRecipes_width = ShapedRecipes.class.getDeclaredField("recipeWidth");
+            shapedRecipes_width.setAccessible(true);
+            shapedRecipes_height = ShapedRecipes.class.getDeclaredField("recipeHeight");
+            shapedRecipes_height.setAccessible(true);
+            shapedRecipes_ingredients = ShapedRecipes.class.getDeclaredField("recipeItems");
+            shapedRecipes_ingredients.setAccessible(true);
+            shapelessRecipes_ingredients = ShapelessRecipes.class.getDeclaredField("recipeItems");
+            shapelessRecipes_ingredients.setAccessible(true);
+        } catch (Exception e) {
+            CraftGuideLog.log(e, "Could not find vanilla recipe fields via reflection.", true);
+        }
 
-        try {
-            advRecipe_width = AdvRecipe.class.getDeclaredField("inputWidth"); advRecipe_width.setAccessible(true); // Correct field name is inputWidth
-            advRecipe_height = AdvRecipe.class.getDeclaredField("inputHeight"); advRecipe_height.setAccessible(true); // Correct field name is inputHeight
-            advRecipe_input = AdvRecipe.class.getDeclaredField("input"); advRecipe_input.setAccessible(true);
-            advShapelessRecipe_input = AdvShapelessRecipe.class.getDeclaredField("input"); advShapelessRecipe_input.setAccessible(true);
-        } catch (Exception e) { CraftGuideLog.log("Could not find IC2 recipe fields. This is normal if IC2 is not installed."); }
+        if (Loader.isModLoaded("ic2")) {
+            try {
+                advRecipeClass = Class.forName("ic2.core.recipe.AdvRecipe");
+                advShapelessRecipeClass = Class.forName("ic2.core.recipe.AdvShapelessRecipe");
+
+                advRecipe_width = advRecipeClass.getDeclaredField("inputWidth");
+                advRecipe_width.setAccessible(true);
+                advRecipe_height = advRecipeClass.getDeclaredField("inputHeight");
+                advRecipe_height.setAccessible(true);
+                advRecipe_input = advRecipeClass.getDeclaredField("input");
+                advRecipe_input.setAccessible(true);
+
+                advShapelessRecipe_input = advShapelessRecipeClass.getDeclaredField("input");
+                advShapelessRecipe_input.setAccessible(true);
+            } catch (Exception e) {
+                CraftGuideLog.log("Found IC2, but failed to access its recipe classes via reflection. IC2 crafting recipes may not be shown.");
+                CraftGuideLog.log(e);
+            }
+        }
     }
 
     private Map<ItemStack, List<CraftGuideRecipe>> recipes = new HashMap<>();
@@ -160,18 +183,18 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
 
             ItemStack output = recipe.getRecipeOutput();
 
-            if (recipe instanceof AdvRecipe && advRecipe_width != null) {
-                AdvRecipe shaped = (AdvRecipe) recipe;
-                int width = (int) advRecipe_width.get(shaped);
-                int height = (int) advRecipe_height.get(shaped);
-                IRecipeInput[] ic2Inputs = (IRecipeInput[]) advRecipe_input.get(shaped);
+            // Check for IC2 AdvRecipe safely
+            if (advRecipeClass != null && advRecipeClass.isInstance(recipe)) {
+                int width = (int) advRecipe_width.get(recipe);
+                int height = (int) advRecipe_height.get(recipe);
+                IRecipeInput[] ic2Inputs = (IRecipeInput[]) advRecipe_input.get(recipe);
                 NonNullList<Ingredient> ingredients = ingredientsFromIC2Inputs(ic2Inputs);
                 if (allowSmallGrid && width <= 2 && height <= 2) return getSmallShapedRecipe(width, height, ingredients, output);
                 else return getCraftingShapedRecipe(width, height, ingredients, output);
             }
-            else if (recipe instanceof AdvShapelessRecipe && advShapelessRecipe_input != null) {
-                AdvShapelessRecipe shapeless = (AdvShapelessRecipe) recipe;
-                IRecipeInput[] ic2Inputs = (IRecipeInput[]) advShapelessRecipe_input.get(shapeless);
+            // Check for IC2 AdvShapelessRecipe safely
+            else if (advShapelessRecipeClass != null && advShapelessRecipeClass.isInstance(recipe)) {
+                IRecipeInput[] ic2Inputs = (IRecipeInput[]) advShapelessRecipe_input.get(recipe);
                 NonNullList<Ingredient> ingredients = ingredientsFromIC2Inputs(ic2Inputs);
                 return getCraftingShapelessRecipe(ingredients, output);
             }
@@ -201,6 +224,7 @@ public class RecipeGeneratorImplementation implements RecipeGenerator
 
         return null;
     }
+
     private NonNullList<Ingredient> ingredientsFromIC2Inputs(IRecipeInput[] ic2Inputs) {
         NonNullList<Ingredient> ingredients = NonNullList.create();
         for (IRecipeInput ic2Input : ic2Inputs) {
