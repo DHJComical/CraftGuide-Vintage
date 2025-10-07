@@ -53,6 +53,8 @@ public class CraftGuide
     public static final int DAMAGE_WILDCARD = 32767;
     public static ItemCraftGuide itemCraftGuide = (ItemCraftGuide) ModItems.CRAFT_GUIDE;
 
+    public static final List<RecipeProvider> RECIPE_PROVIDERS = new ArrayList<>();
+
     public void preInit(boolean disableItem)
     {
         initForgeExtensions();
@@ -66,17 +68,17 @@ public class CraftGuide
 
     public void init()
     {
-        RecipeGeneratorImplementation generator = RecipeGeneratorImplementation.instance;
+        // 1. Manually add all recipe providers to our public, static list
+        RECIPE_PROVIDERS.add(new DefaultRecipeProvider());
+        RECIPE_PROVIDERS.add(new BrewingRecipes());
+        RECIPE_PROVIDERS.add(new GrassSeedDrops());
 
-        generator.addProvider(new DefaultRecipeProvider());
-        generator.addProvider(new BrewingRecipes());
-        generator.addProvider(new GrassSeedDrops());
-
+        // 2. Conditionally add providers for other mods
         if (loaderSide.isModLoaded("ic2")) {
             try {
-                generator.addProvider(new IC2ExperimentalRecipes());
+                RECIPE_PROVIDERS.add(new IC2ExperimentalRecipes());
             } catch (Throwable e) {
-                CraftGuideLog.log("Failed to initialize IC2 recipe provider. IC2 recipes will not be available.");
+                CraftGuideLog.log("Failed to initialize IC2 recipe provider. IC2 recipes may not be available.");
                 CraftGuideLog.log(e);
             }
         }
@@ -85,13 +87,14 @@ public class CraftGuide
             try {
                 Object provider = Class.forName("com.dhjcomical.craftguide.recipes.BuildCraftRecipes").newInstance();
                 if (provider instanceof RecipeProvider) {
-                    generator.addProvider((RecipeProvider) provider);
+                    RECIPE_PROVIDERS.add((RecipeProvider) provider);
                 }
             } catch (Exception e) {
                 CraftGuideLog.log("Failed to load recipe provider for BuildCraft", true);
             }
         }
 
+        // 3. Initialize network channels
         side.initNetworkChannels();
     }
 

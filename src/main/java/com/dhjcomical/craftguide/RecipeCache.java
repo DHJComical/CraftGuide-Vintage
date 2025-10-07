@@ -305,7 +305,7 @@ public class RecipeCache
         generator.clearRecipes();
         CraftGuideLog.log("  Generating recipes from registered providers...");
 
-        for(RecipeProvider provider : generator.getProviders())
+        for(RecipeProvider provider : CraftGuide.RECIPE_PROVIDERS)
         {
             CraftGuideLog.log("    Generating recipes from " + provider.getClass().getName());
             try
