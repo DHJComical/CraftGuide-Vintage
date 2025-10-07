@@ -126,117 +126,80 @@ public class RecipeCache
 		reset();
 	}
 
-	public synchronized void reset()
-	{
-		CraftGuide.needsRecipeRefresh = false;
+    public synchronized void reset() {
+        CraftGuide.needsRecipeRefresh = false;
+        runTask(() -> {
+            CraftGuideLog.log("(re)loading recipe list...");
+            Map<ItemStack, List<CraftGuideRecipe>> rawRecipes = generateRecipes();
+            Map<ItemType, List<CraftGuideRecipe>> newCraftResults = new HashMap<>();
 
-		runTask(new Task(){
-			@Override
-			public void run()
-			{
-				CraftGuideLog.log("(re)loading recipe list...");
-				Map<ItemStack, List<CraftGuideRecipe>> rawRecipes = generateRecipes();
+            for (Map.Entry<ItemStack, List<CraftGuideRecipe>> entry : rawRecipes.entrySet()) {
+                ItemType type = ItemType.getInstance(entry.getKey());
+                if (type != null) {
+                    newCraftResults.computeIfAbsent(type, k -> new ArrayList<>()).addAll(entry.getValue());
+                }
+            }
 
-				filterRawRecipes(rawRecipes);
-				Map<ItemType, List<CraftGuideRecipe>> newCraftResults = new HashMap<>();
+            SortedSet<ItemType> newAllItems = generateAllItemList(newCraftResults);
+            SortedSet<ItemType> newCraftingTypes = new TreeSet<>(newCraftResults.keySet());
 
-				for(ItemStack key: rawRecipes.keySet())
-				{
-					ItemType type = ItemType.getInstance(key);
+            if (firstReset) {
+                currentTypes = new HashSet<>(newCraftingTypes);
+                for (ItemStack stack : generator.disabledTypes) {
+                    currentTypes.remove(ItemType.getInstance(stack));
+                }
+                firstReset = false;
+            }
 
-					if(type == null)
-					{
-						CraftGuideLog.log("  Error: null type, " + rawRecipes.get(key).size() + " recipes skipped");
-						continue;
-					}
+            craftResults = newCraftResults;
+            allItems = newAllItems;
+            craftingTypes = newCraftingTypes;
 
-					if(!newCraftResults.containsKey(type))
-					{
-						newCraftResults.put(type, new ArrayList<CraftGuideRecipe>());
-					}
+            setTypes(currentTypes);
+            listeners.forEach(listener -> listener.onReset(RecipeCache.this));
+        });
+    }
 
-					newCraftResults.get(type).addAll(rawRecipes.get(key));
-				}
+    private static SortedSet<ItemType> generateAllItemList(Map<ItemType, List<CraftGuideRecipe>> craftResults) {
+        SortedSet<ItemType> allItems = new TreeSet<>();
 
-				SortedSet<ItemType> newAllItems = generateAllItemList(newCraftResults);
+        Map<String, ItemType> oreDictCache = new HashMap<>();
 
-				SortedSet<ItemType> newCraftingTypes = new TreeSet<>();
-				newCraftingTypes.addAll(newCraftResults.keySet());
+        for (List<CraftGuideRecipe> recipeList : craftResults.values()) {
+            for (CraftGuideRecipe recipe : recipeList) {
+                for (Object item : recipe.getItems()) {
+                    if (item == null) continue;
 
-				if(firstReset)
-				{
-					currentTypes = new HashSet<>();
-					currentTypes.addAll(newCraftingTypes);
+                    if (item instanceof List) {
+                        List<?> list = (List<?>) item;
+                        String oreDictName = ForgeExtensions.getOreDictionaryName(list);
 
-					for(ItemStack stack: generator.disabledTypes)
-					{
-						currentTypes.remove(ItemType.getInstance(stack));
-					}
+                        if (oreDictName != null) {
+                            if (!oreDictCache.containsKey(oreDictName)) {
+                                ItemType oreType = ItemType.getInstance(item);
+                                if (oreType != null) {
+                                    allItems.add(oreType);
+                                    oreDictCache.put(oreDictName, oreType);
+                                }
+                            }
+                        } else {
+                            ItemType itemType = ItemType.getInstance(item);
+                            if (itemType != null) {
+                                allItems.add(itemType);
+                            }
+                        }
+                    } else {
+                        ItemType itemType = ItemType.getInstance(item);
+                        if (itemType != null) {
+                            allItems.add(itemType);
+                        }
+                    }
+                }
+            }
+        }
 
-					firstReset = false;
-				}
-
-				craftResults = newCraftResults;
-				allItems = newAllItems;
-				craftingTypes = newCraftingTypes;
-
-				setTypes(currentTypes);
-
-				for(IRecipeCacheListener listener: listeners)
-				{
-					listener.onReset(RecipeCache.this);
-				}
-			}
-		});
-	}
-
-	private static SortedSet<ItemType> generateAllItemList(Map<ItemType, List<CraftGuideRecipe>> craftResults)
-	{
-		SortedSet<ItemType> allItems = new TreeSet<>();
-
-		for(List<CraftGuideRecipe> type: craftResults.values())
-		{
-			for(CraftGuideRecipe recipe: type)
-			{
-				for(Object item: recipe.getItems())
-				{
-					if(item != null)
-					{
-						if(item instanceof ItemStack)
-						{
-							allItems.add(ItemType.getInstance(item));
-						}
-						else if(item instanceof ArrayList)
-						{
-							for(Object o: (ArrayList<?>)item)
-							{
-								if(o instanceof ItemStack)
-								{
-									ItemStack stack = (ItemStack)o;
-									ItemType craftType = ItemType.getInstance(stack);
-
-									if(craftType != null)
-									{
-										allItems.add(craftType);
-									}
-								}
-							}
-
-							ItemType craftType = ItemType.getInstance(item);
-
-							if(craftType != null)
-							{
-								allItems.add(craftType);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		removeUselessDuplicates(allItems);
-		return allItems;
-	}
+        return allItems;
+    }
 
 	private static void removeUselessDuplicates(SortedSet<ItemType> allItems)
 	{
@@ -337,34 +300,26 @@ public class RecipeCache
 		}
 	}
 
-	private Map<ItemStack, List<CraftGuideRecipe>> generateRecipes()
-	{
-		generator.clearRecipes();
-		CraftGuideLog.log("  Getting recipes...");
-		for(Object object: ReflectionAPI.APIObjects)
-		{
-			if(object instanceof RecipeProvider)
-			{
-				if(CraftGuide.ae2Workaround && object instanceof RecipeGenerator)
-				{
-					CraftGuideLog.log("    *NOT* Generating recipes from " + object.getClass().getName());
-					continue;
-				}
+    private Map<ItemStack, List<CraftGuideRecipe>> generateRecipes()
+    {
+        generator.clearRecipes();
+        CraftGuideLog.log("  Generating recipes from registered providers...");
 
-				CraftGuideLog.log("    Generating recipes from " + object.getClass().getName());
-				try
-				{
-					((RecipeProvider)object).generateRecipes(generator);
-				}
-				catch(Exception | LinkageError e)
-				{
-					CraftGuideLog.log(e);
-				}
-			}
-		}
+        for(RecipeProvider provider : generator.getProviders())
+        {
+            CraftGuideLog.log("    Generating recipes from " + provider.getClass().getName());
+            try
+            {
+                provider.generateRecipes(generator);
+            }
+            catch(Exception | LinkageError e)
+            {
+                CraftGuideLog.log(e, "Provider " + provider.getClass().getName() + " failed!", true);
+            }
+        }
 
-		return generator.getRecipes();
-	}
+        return generator.getRecipes();
+    }
 
 	private void filterRawRecipes(Map<ItemStack, List<CraftGuideRecipe>> rawRecipes)
 	{

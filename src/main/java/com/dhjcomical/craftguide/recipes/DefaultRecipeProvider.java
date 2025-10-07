@@ -31,168 +31,62 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 public class DefaultRecipeProvider extends CraftGuideAPIObject implements RecipeProvider, StackInfoSource
 {
-	public DefaultRecipeProvider()
-	{
-		StackInfo.addSource(this);
-	}
+    private static final boolean DEBUG_MODE = true;
 
-	private final Slot[] shapelessCraftingSlots = new ItemSlot[]{
-		new ItemSlot( 3,  3, 16, 16),
-		new ItemSlot(21,  3, 16, 16),
-		new ItemSlot(39,  3, 16, 16),
-		new ItemSlot( 3, 21, 16, 16),
-		new ItemSlot(21, 21, 16, 16),
-		new ItemSlot(39, 21, 16, 16),
-		new ItemSlot( 3, 39, 16, 16),
-		new ItemSlot(21, 39, 16, 16),
-		new ItemSlot(39, 39, 16, 16),
-		new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT),
-	};
+    public DefaultRecipeProvider() { StackInfo.addSource(this); }
 
-	private final Slot[] craftingSlotsOwnBackground = new ItemSlot[]{
-		new ItemSlot( 3,  3, 16, 16).drawOwnBackground(),
-		new ItemSlot(21,  3, 16, 16).drawOwnBackground(),
-		new ItemSlot(39,  3, 16, 16).drawOwnBackground(),
-		new ItemSlot( 3, 21, 16, 16).drawOwnBackground(),
-		new ItemSlot(21, 21, 16, 16).drawOwnBackground(),
-		new ItemSlot(39, 21, 16, 16).drawOwnBackground(),
-		new ItemSlot( 3, 39, 16, 16).drawOwnBackground(),
-		new ItemSlot(21, 39, 16, 16).drawOwnBackground(),
-		new ItemSlot(39, 39, 16, 16).drawOwnBackground(),
-		new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(),
-	};
+    private final Slot[] shapelessCraftingSlots = new ItemSlot[]{ new ItemSlot(3, 3, 16, 16), new ItemSlot(21, 3, 16, 16), new ItemSlot(39, 3, 16, 16), new ItemSlot(3, 21, 16, 16), new ItemSlot(21, 21, 16, 16), new ItemSlot(39, 21, 16, 16), new ItemSlot(3, 39, 16, 16), new ItemSlot(21, 39, 16, 16), new ItemSlot(39, 39, 16, 16), new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT), };
+    private final Slot[] craftingSlotsOwnBackground = new ItemSlot[]{ new ItemSlot(3, 3, 16, 16).drawOwnBackground(), new ItemSlot(21, 3, 16, 16).drawOwnBackground(), new ItemSlot(39, 3, 16, 16).drawOwnBackground(), new ItemSlot(3, 21, 16, 16).drawOwnBackground(), new ItemSlot(21, 21, 16, 16).drawOwnBackground(), new ItemSlot(39, 21, 16, 16).drawOwnBackground(), new ItemSlot(3, 39, 16, 16).drawOwnBackground(), new ItemSlot(21, 39, 16, 16).drawOwnBackground(), new ItemSlot(39, 39, 16, 16).drawOwnBackground(), new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(), };
+    private final Slot[] smallCraftingSlotsOwnBackground = new ItemSlot[]{ new ItemSlot(12, 12, 16, 16).drawOwnBackground(), new ItemSlot(30, 12, 16, 16).drawOwnBackground(), new ItemSlot(12, 30, 16, 16).drawOwnBackground(), new ItemSlot(30, 30, 16, 16).drawOwnBackground(), new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(), };
+    private final Slot[] craftingSlots = new ItemSlot[]{ new ItemSlot(3, 3, 16, 16), new ItemSlot(21, 3, 16, 16), new ItemSlot(39, 3, 16, 16), new ItemSlot(3, 21, 16, 16), new ItemSlot(21, 21, 16, 16), new ItemSlot(39, 21, 16, 16), new ItemSlot(3, 39, 16, 16), new ItemSlot(21, 39, 16, 16), new ItemSlot(39, 39, 16, 16), new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT), };
+    private final Slot[] smallCraftingSlots = new ItemSlot[]{ new ItemSlot(12, 12, 16, 16), new ItemSlot(30, 12, 16, 16), new ItemSlot(12, 30, 16, 16), new ItemSlot(30, 30, 16, 16), new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT), };
+    private final Slot[] furnaceSlots = new ItemSlot[]{ new ItemSlot(13, 21, 16, 16), new ItemSlot(50, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT), };
 
-	private final Slot[] smallCraftingSlotsOwnBackground = new ItemSlot[]{
-		new ItemSlot(12, 12, 16, 16).drawOwnBackground(),
-		new ItemSlot(30, 12, 16, 16).drawOwnBackground(),
-		new ItemSlot(12, 30, 16, 16).drawOwnBackground(),
-		new ItemSlot(30, 30, 16, 16).drawOwnBackground(),
-		new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(),
-	};
-
-	private final Slot[] craftingSlots = new ItemSlot[]{
-		new ItemSlot( 3,  3, 16, 16),
-		new ItemSlot(21,  3, 16, 16),
-		new ItemSlot(39,  3, 16, 16),
-		new ItemSlot( 3, 21, 16, 16),
-		new ItemSlot(21, 21, 16, 16),
-		new ItemSlot(39, 21, 16, 16),
-		new ItemSlot( 3, 39, 16, 16),
-		new ItemSlot(21, 39, 16, 16),
-		new ItemSlot(39, 39, 16, 16),
-		new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT),
-	};
-
-	private final Slot[] smallCraftingSlots = new ItemSlot[]{
-		new ItemSlot(12, 12, 16, 16),
-		new ItemSlot(30, 12, 16, 16),
-		new ItemSlot(12, 30, 16, 16),
-		new ItemSlot(30, 30, 16, 16),
-		new ItemSlot(59, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT),
-	};
-
-	private final Slot[] furnaceSlots = new ItemSlot[]{
-		new ItemSlot(13, 21, 16, 16),
-		new ItemSlot(50, 21, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT),
-	};
-
-	@Override
-	public void generateRecipes(RecipeGenerator generator)
-	{
-		RecipeTemplate craftingTemplate;
-		RecipeTemplate smallCraftingTemplate;
-
-		if(CraftGuide.newerBackgroundStyle)
-		{
-			craftingTemplate = generator.createRecipeTemplate(craftingSlotsOwnBackground, null);
-			smallCraftingTemplate = generator.createRecipeTemplate(smallCraftingSlotsOwnBackground, null);
-		}
-		else
-		{
-			craftingTemplate = new DefaultRecipeTemplate(
-					craftingSlots, RecipeGeneratorImplementation.workbench,
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							1, 1, 79, 58),
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							82, 1, 79, 58));
-
-			smallCraftingTemplate = new DefaultRecipeTemplate(
-					smallCraftingSlots, RecipeGeneratorImplementation.workbench,
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							1, 61, 79, 58),
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							82, 61, 79, 58));
-		}
-
-		RecipeTemplate shapelessTemplate = new DefaultRecipeTemplate(
-					shapelessCraftingSlots,
-					RecipeGeneratorImplementation.workbench,
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							1, 121, 79, 58),
-					new TextureClip(
-							DynamicTexture.instance("recipe_backgrounds"),
-							82, 121, 79, 58));
-
-		RecipeTemplate furnaceTemplate = new DefaultRecipeTemplate(
-				furnaceSlots,
-				new ItemStack(Blocks.FURNACE),
-				new TextureClip(
-						DynamicTexture.instance("recipe_backgrounds"),
-						1, 181, 79, 58),
-				new TextureClip(
-						DynamicTexture.instance("recipe_backgrounds"),
-						82, 181, 79, 58));
-
-		addCraftingRecipes(craftingTemplate, smallCraftingTemplate, shapelessTemplate, generator);
-		addFurnaceRecipes(furnaceTemplate, generator);
-	}
+    @Override
+    public void generateRecipes(RecipeGenerator generator) {
+        RecipeTemplate craftingTemplate, smallCraftingTemplate;
+        if(CraftGuide.newerBackgroundStyle) { craftingTemplate = generator.createRecipeTemplate(craftingSlotsOwnBackground, null); smallCraftingTemplate = generator.createRecipeTemplate(smallCraftingSlotsOwnBackground, null); }
+        else { craftingTemplate = new DefaultRecipeTemplate(craftingSlots, RecipeGeneratorImplementation.workbench, new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 1, 1, 79, 58), new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 82, 1, 79, 58)); smallCraftingTemplate = new DefaultRecipeTemplate(smallCraftingSlots, RecipeGeneratorImplementation.workbench, new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 1, 61, 79, 58), new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 82, 61, 79, 58)); }
+        RecipeTemplate shapelessTemplate = new DefaultRecipeTemplate(shapelessCraftingSlots, RecipeGeneratorImplementation.workbench, new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 1, 121, 79, 58), new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 82, 121, 79, 58));
+        RecipeTemplate furnaceTemplate = new DefaultRecipeTemplate(furnaceSlots, new ItemStack(Blocks.FURNACE), new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 1, 181, 79, 58), new TextureClip(DynamicTexture.instance("recipe_backgrounds"), 82, 181, 79, 58));
+        addCraftingRecipes(craftingTemplate, smallCraftingTemplate, shapelessTemplate, generator);
+        addFurnaceRecipes(furnaceTemplate, generator);
+    }
 
     private void addFurnaceRecipes(RecipeTemplate template, RecipeGenerator generator) {
         Map<ItemStack, ItemStack> furnaceRecipes = FurnaceRecipes.instance().getSmeltingList();
-
         for (Entry<ItemStack, ItemStack> entry : furnaceRecipes.entrySet()) {
             ItemStack input = entry.getKey();
             if (input.getMetadata() == 32767 && input.getItem().getHasSubtypes()) {
                 NonNullList<ItemStack> items = NonNullList.create();
                 input.getItem().getSubItems(null, items);
-
-                for (ItemStack subItem : items) {
-                    generator.addRecipe(
-                            template,
-                            new Object[]{
-                                    subItem,
-                                    entry.getValue()
-                            });
-                }
-            } else {
-                generator.addRecipe(
-                        template,
-                        new Object[]{
-                                entry.getKey(),
-                                entry.getValue()
-                        });
-            }
+                for (ItemStack subItem : items) { generator.addRecipe(template, new Object[]{ subItem, entry.getValue() }); }
+            } else { generator.addRecipe( template, new Object[]{ entry.getKey(), entry.getValue() }); }
         }
     }
 
     private void addCraftingRecipes(RecipeTemplate template, RecipeTemplate templateSmall, RecipeTemplate templateShapeless, RecipeGenerator generator) {
-
+        if (DEBUG_MODE) CraftGuideLog.log("[Recipe Dumper] Starting to dump crafting recipes...");
         List<IRecipe> recipes = ForgeRegistries.RECIPES.getValues();
-
         int errCount = 0;
 
-        for (IRecipe recipe : recipes) { // 直接遍历 IRecipe
+        for (IRecipe recipe : recipes) {
+            if (recipe == null || recipe.getRecipeOutput().isEmpty()) continue;
+
+            if (DEBUG_MODE) {
+                CraftGuideLog.log("-----------------------------------------");
+                CraftGuideLog.log("[Recipe Dumper] Processing recipe for: " + recipe.getRecipeOutput().getDisplayName() + " (" + recipe.getRecipeOutput().getItem().getRegistryName() + ")");
+                CraftGuideLog.log("[Recipe Dumper]   - Class: " + recipe.getClass().getName());
+            }
+
             try {
                 Object[] items = generator.getCraftingRecipe(recipe, true);
-
                 if (items == null) {
+                    if (DEBUG_MODE) CraftGuideLog.log("[Recipe Dumper]   -> SKIPPED (Translator returned null)");
                     continue;
                 }
+
+                if (DEBUG_MODE) CraftGuideLog.log("[Recipe Dumper]   -> Translated to Object[] with length: " + items.length);
 
                 if (items.length == 5) {
                     generator.addRecipe(templateSmall, items);
@@ -202,55 +96,31 @@ public class DefaultRecipeProvider extends CraftGuideAPIObject implements Recipe
                     generator.addRecipe(template, items);
                 }
             } catch (Exception e) {
-                if (errCount != -1) {
-                    if (++errCount >= 5) {
-                        CraftGuideLog.log("CraftGuide DefaultRecipeProvider: Stack trace limit reached...", true);
-                        errCount = -1;
-                    } else {
-                        CraftGuideLog.log(e, "", true);
-                    }
+                if (errCount < 10) {
+                    CraftGuideLog.log(e, "Exception while processing recipe for " + recipe.getRecipeOutput().getDisplayName(), true);
+                    errCount++;
                 }
-                CraftGuideLog.log(e);
             }
         }
+        if (DEBUG_MODE) CraftGuideLog.log("[Recipe Dumper] Finished dumping crafting recipes.");
     }
 
     private boolean isShapelessRecipe(IRecipe recipe) {
         return recipe instanceof ShapelessRecipes || recipe instanceof ShapelessOreRecipe;
     }
 
-	@Override
-	public String getInfo(ItemStack itemStack)
-	{
-		int fuel = TileEntityFurnace.getItemBurnTime(itemStack);
-
-		if(fuel > 0)
-		{
-			double value = fuel / 200.0;
-			int round = (int)value;
-			int dec = (int)((value - round) * 100);
-
-			StringBuilder builder = new StringBuilder("\u00a77Can fuel ");
-			builder.append(round);
-
-			if(dec > 0)
-			{
-				builder.append('.');
-
-				if(dec < 10)
-				{
-					builder.append('0');
-				}
-
-				builder.append(dec);
-			}
-
-			builder.append(" furnace operations");
-			return builder.toString();
-		}
-		else
-		{
-			return null;
-		}
-	}
+    @Override
+    public String getInfo(ItemStack itemStack) {
+        int fuel = TileEntityFurnace.getItemBurnTime(itemStack);
+        if(fuel > 0) {
+            double value = fuel / 200.0;
+            int round = (int)value;
+            int dec = (int)((value - round) * 100);
+            StringBuilder builder = new StringBuilder("\u00a77Can fuel ");
+            builder.append(round);
+            if(dec > 0) { builder.append('.'); if(dec < 10) { builder.append('0'); } builder.append(dec); }
+            builder.append(" furnace operations");
+            return builder.toString();
+        } else { return null; }
+    }
 }

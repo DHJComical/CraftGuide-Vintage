@@ -30,15 +30,9 @@ public class CraftGuide
     public static CraftGuideSide side;
     public static CraftGuideLoaderSide loaderSide;
 
-    // ======================================================================
-    // STEP 1: ADD A CENTRAL REGISTRY FOR RECIPE PROVIDERS
-    // ======================================================================
-    public static final List<RecipeProvider> RECIPE_PROVIDERS = new ArrayList<>();
-
     private static Properties config = new Properties();
     private static Map<String, String> configComments;
 
-    // ... (All other properties remain the same) ...
     public static int resizeRate;
     public static int mouseWheelScrollRate;
     public static int defaultKeybind;
@@ -72,24 +66,29 @@ public class CraftGuide
 
     public void init()
     {
-        RECIPE_PROVIDERS.add(new DefaultRecipeProvider());
-        RECIPE_PROVIDERS.add(new BrewingRecipes());
-        RECIPE_PROVIDERS.add(new GrassSeedDrops());
+        RecipeGeneratorImplementation generator = RecipeGeneratorImplementation.instance;
+
+        generator.addProvider(new DefaultRecipeProvider());
+        generator.addProvider(new BrewingRecipes());
+        generator.addProvider(new GrassSeedDrops());
 
         if (loaderSide.isModLoaded("ic2")) {
             try {
-                RECIPE_PROVIDERS.add(new IC2ExperimentalRecipes());
+                generator.addProvider(new IC2ExperimentalRecipes());
             } catch (Throwable e) {
-                CraftGuideLog.log("Failed to initialize IC2 recipe provider. IC2 recipes may not be available.");
+                CraftGuideLog.log("Failed to initialize IC2 recipe provider. IC2 recipes will not be available.");
                 CraftGuideLog.log(e);
             }
         }
 
         if (loaderSide.isModLoaded("buildcraftfactory")) {
             try {
-                RECIPE_PROVIDERS.add((RecipeProvider) Class.forName("com.dhjcomical.craftguide.recipes.BuildCraftRecipes").newInstance());
+                Object provider = Class.forName("com.dhjcomical.craftguide.recipes.BuildCraftRecipes").newInstance();
+                if (provider instanceof RecipeProvider) {
+                    generator.addProvider((RecipeProvider) provider);
+                }
             } catch (Exception e) {
-                CraftGuideLog.log("Failed to load recipe provider for BuildCraft");
+                CraftGuideLog.log("Failed to load recipe provider for BuildCraft", true);
             }
         }
 
@@ -123,7 +122,6 @@ public class CraftGuide
         }
     }
 
-    // ... (All other methods like config loading, saving, etc. remain exactly the same) ...
     static
     {
         configComments = new HashMap<>();
