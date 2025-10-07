@@ -31,7 +31,7 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 public class DefaultRecipeProvider extends CraftGuideAPIObject implements RecipeProvider, StackInfoSource
 {
-    private static final boolean DEBUG_MODE = true;
+    private static final boolean DEBUG_MODE = false;
 
     public DefaultRecipeProvider() { StackInfo.addSource(this); }
 
