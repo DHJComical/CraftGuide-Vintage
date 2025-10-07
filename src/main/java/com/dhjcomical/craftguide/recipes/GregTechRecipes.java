@@ -1,523 +1,309 @@
-//package com.dhjcomical.craftguide.recipes;
-//
-//import java.lang.reflect.Field;
-//import java.lang.reflect.InvocationTargetException;
-//import java.lang.reflect.Method;
-//import java.util.ArrayList;
-//import java.util.Collection;
-//import java.util.List;
-//import java.util.Map;
-//
-//import net.minecraft.block.Block;
-//import net.minecraft.item.Item;
-//import net.minecraft.item.ItemStack;
-//import com.dhjcomical.craftguide.CommonUtilities;
-//import com.dhjcomical.craftguide.CraftGuideLog;
-//import com.dhjcomical.craftguide.api.slotTypes.ChanceSlot;
-//import com.dhjcomical.craftguide.api.CraftGuideAPIObject;
-//import com.dhjcomical.craftguide.api.slotTypes.EUSlot;
-//import com.dhjcomical.craftguide.api.slotTypes.ExtraSlot;
-//import com.dhjcomical.craftguide.api.slotTypes.ItemSlot;
-//import com.dhjcomical.craftguide.api.RecipeGenerator;
-//import com.dhjcomical.craftguide.api.RecipeProvider;
-//import com.dhjcomical.craftguide.api.RecipeTemplate;
-//import com.dhjcomical.craftguide.api.slotTypes.Slot;
-//import com.dhjcomical.craftguide.api.SlotType;
-//import com.dhjcomical.craftguide.recipes.IC2ExperimentalRecipes.AdditionalMachines;
-//
-//public class GregTechRecipes extends CraftGuideAPIObject implements RecipeProvider, AdditionalMachines
-//{
-//	public GregTechRecipes()
-//	{
-//		super();
-//		IC2ExperimentalRecipes.additionalMachines.add(this);
-//	}
-//
-//	@Override
-//	public void generateRecipes(RecipeGenerator generator)
-//	{
-//		try
-//		{
-//			Class<? extends Enum<?>> itemList = (Class<? extends Enum<?>>)Class.forName("gregtech.api.enums.ItemList");
-//			Class<?> recipeClass;
-//
-//			try
-//			{
-//				recipeClass = Class.forName("gregtech.api.util.GT_Recipe$GT_Recipe_Map");
-//			}
-//			catch(ClassNotFoundException e)
-//			{
-//				recipeClass = Class.forName("gregtech.api.util.GT_Recipe");
-//			}
-//
-//			generateRecipes(
-//					generator, getMachines(itemList, "Centrifuge"),
-//					(ArrayList<?>)recipeClass.getField("sCentrifugeRecipes").get(null),
-//					5, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Electrolyzer"),
-//					(ArrayList<?>)recipeClass.getField("sElectrolyzerRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "ChemicalReactor"),
-//					(ArrayList<?>)recipeClass.getField("sChemicalRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Wiremill"),
-//					(ArrayList<?>)recipeClass.getField("sWiremillRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "AlloySmelter"),
-//					(ArrayList<?>)recipeClass.getField("sAlloySmelterRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Bender"),
-//					(ArrayList<?>)recipeClass.getField("sBenderRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Assembler"),
-//					(ArrayList<?>)recipeClass.getField("sAssemblerRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Canner"),
-//					(ArrayList<?>)recipeClass.getField("sCannerRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Lathe"),
-//					(ArrayList<?>)recipeClass.getField("sLatheRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Cutter"),
-//					(ArrayList<?>)recipeClass.getField("sCutterRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Extruder"),
-//					(ArrayList<?>)recipeClass.getField("sExtruderRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Bronze_Hammer"),
-//					(ArrayList<?>)recipeClass.getField("sHammerRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Boxinator"),
-//					(ArrayList<?>)recipeClass.getField("sBoxinatorRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Unboxinator"),
-//					(ArrayList<?>)recipeClass.getField("sUnboxinatorRecipes").get(null),
-//					-1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Generator_Diesel"),
-//					(ArrayList<?>)recipeClass.getField("sDieselFuels").get(null),
-//					12, 1000, true, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, "Generator_Gas_Turbine"),
-//					(ArrayList<?>)recipeClass.getField("sTurbineFuels").get(null),
-//					16, 1000, true, null);
-//
-//			// Things GregTech 1.7 has not implemented yet (at the time of writing this):
-//			/*
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sFusionRecipes").get(null),
-//					2, 1, -1, 0, true, "\u00a77  First reaction cost: %1$d EU");
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sGrinderRecipes").get(null),
-//					2, 4, -1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sBlastRecipes").get(null),
-//					2, 2, -1, 0, false, "\u00a77  Required temperature: %1$d");
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sImplosionRecipes").get(null),
-//					2, 2, -1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sSawmillRecipes").get(null),
-//					2, 3, -1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sHotFuels").get(null),
-//					1, 1, 24, 1000, true, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sDenseLiquidFuels").get(null),
-//					1, 1, 8, 1000, true, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sVacuumRecipes").get(null),
-//					1, 1, -1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sMagicFuels").get(null),
-//					1, 1, 24, 1000, true, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sDistillationRecipes").get(null),
-//					2, 4, -1, 0, false, null);
-//			generateRecipes(
-//					generator, getMachines(itemList, ""),
-//					(ArrayList)recipeClass.getField("sPlasmaFuels").get(null),
-//					1, 1, 2048, 1000, true, null);
-//			*/
-//
-//			Class<?> modHandlerClass = Class.forName("gregtech.api.util.GT_ModHandler");
-//			generatePulverizerRecipes(
-//					generator, getMachines(itemList, "Macerator", 3),
-//					(Map<Integer, Object>)CommonUtilities.getPrivateValue(modHandlerClass, null, "sPulverizerRecipes"));
-//		}
-//		catch(ClassNotFoundException | IllegalArgumentException | SecurityException | IllegalAccessException | NoSuchFieldException | InvocationTargetException | NoSuchMethodException e)
-//		{
-//			CraftGuideLog.log(e, "Error while adding GregTech recipes:", true);
-//		}
-//	}
-//
-//	private ArrayList<ItemStack> getMachines(Class<? extends Enum<?>> itemList, String string) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, ClassNotFoundException, NoSuchFieldException
-//	{
-//		return getMachines(itemList, string, -1);
-//	}
-//
-//	private ArrayList<ItemStack> getMachines(Class<? extends Enum<?>> itemList, String string, int minimumTier) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, ClassNotFoundException, NoSuchFieldException
-//	{
-//		ArrayList<ItemStack> machines = new ArrayList<>();
-//
-//		Method get = itemList.getMethod("get", long.class, Object[].class);
-//
-//		Class<?> gregTechAPI = Class.forName("gregtech.api.GregTech_API");
-//		Object[] metatileentities = (Object[])gregTechAPI.getField("METATILEENTITIES").get(null);
-//		Item machineBlock = Item.getItemFromBlock((Block)gregTechAPI.getField("sBlockMachines").get(null));
-//
-//		Class<?> tieredMachine = Class.forName("gregtech.api.metatileentity.implementations.GT_MetaTileEntity_TieredMachineBlock");
-//		Field tierField = tieredMachine.getField("mTier");
-//
-//		for(Enum<?> e: itemList.getEnumConstants())
-//		{
-//			if(e.name().endsWith(string))
-//			{
-//				ItemStack item = (ItemStack)get.invoke(e, Long.valueOf(1), new Object[0]);
-//
-//				if(item != null)
-//				{
-//					if(item.getItem() == machineBlock && minimumTier >= 0)
-//					{
-//						if(item.getItemDamage() >= 0 && item.getItemDamage() < metatileentities.length &&
-//								metatileentities[item.getItemDamage()] != null)
-//						{
-//							int tier = tierField.getInt(metatileentities[item.getItemDamage()]);
-//
-//							if(tier < minimumTier)
-//								continue;
-//						}
-//						else
-//						{
-//							continue;
-//						}
-//					}
-//
-//					machines.add(item);
-//				}
-//			}
-//		}
-//
-//		return machines;
-//	}
-//
-//	public static void generateRecipes(RecipeGenerator generator, ArrayList<ItemStack> machines, Collection<?> recipes,
-//			int constantEUt, int startEUOutputMult, boolean generated, final String extraFormat)
-//				throws ClassNotFoundException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException
-//	{
-//		if(machines.size() < 1)
-//			return;
-//
-//		int numInputs = 0;
-//		int numOutputs = 0;
-//
-//		ItemStack typeMachine = machines.get(0);
-//
-//		Class<?> recipeClass = Class.forName("gregtech.api.util.GT_Recipe");
-//		Field eutField = recipeClass.getField("mEUt");
-//		Field durationField = recipeClass.getField("mDuration");
-//		Field extraField;
-//		Field inputs = null;
-//		Field outputs = null;
-//		try
-//		{
-//			extraField = recipeClass.getField("mStartEU");
-//		}
-//		catch(NoSuchFieldException e)
-//		{
-//			extraField = recipeClass.getField("mSpecialValue");
-//		}
-//
-//		inputs = recipeClass.getField("mInputs");
-//		outputs = recipeClass.getField("mOutputs");
-//
-//		for(Object recipe: recipes)
-//		{
-//			numInputs = Math.max(numInputs, recipeLength((ItemStack[])inputs.get(recipe)));
-//			numOutputs = Math.max(numOutputs, recipeLength((ItemStack[])outputs.get(recipe)));
-//		}
-//
-//		Slot[] recipeSlots = layoutMachineSlots(machines, numInputs, numOutputs, extraFormat);
-//		RecipeTemplate template = generator.createRecipeTemplate(recipeSlots, typeMachine);
-//
-//		if(slotColumns(numInputs) + slotColumns(numOutputs) > 3)
-//		{
-//			template.setSize(79 + (slotColumns(numInputs) + slotColumns(numOutputs) - 3) * 18, 58);
-//		}
-//
-//
-//		for(Object recipe: recipes)
-//		{
-//			Object[] recipeContents = new Object[numInputs + numOutputs + 2];
-//
-//			ItemStack[] inputStacks = (ItemStack[])inputs.get(recipe);
-//			ItemStack[] outputStacks = (ItemStack[])outputs.get(recipe);
-//
-//			for(int i = 0; i < Math.min(inputStacks.length, numInputs); i++)
-//			{
-//				recipeContents[i] = inputStacks[i];
-//			}
-//
-//			for(int i = 0; i < Math.min(outputStacks.length, numOutputs); i++)
-//			{
-//				recipeContents[i + numInputs] = outputStacks[i];
-//			}
-//
-//			int eut = (constantEUt == -1)? eutField.getInt(recipe) : constantEUt;
-//			int extraData = extraField.getInt(recipe);
-//			int duration = durationField.getInt(recipe);
-//			int outputEU = (startEUOutputMult != 0)? extraData * startEUOutputMult : duration * eut;
-//
-//			recipeContents[numInputs + numOutputs + 0] = machines;
-//
-//			if(extraFormat == null)
-//			{
-//				recipeContents[numInputs + numOutputs + 1] = new Object[]{
-//						outputEU * (generated? 1 : -1), eut};
-//			}
-//			else
-//			{
-//				recipeContents[numInputs + numOutputs + 1] = new Object[]{
-//						outputEU * (generated? 1 : -1), eut, extraData};
-//			}
-//
-//			generator.addRecipe(template, recipeContents);
-//		}
-//	}
-//
-//	private static int recipeLength(ItemStack[] itemStacks)
-//	{
-//		for(int i = itemStacks.length; i > 0; i--)
-//		{
-//			if(itemStacks[i - 1] != null)
-//				return i;
-//		}
-//
-//		return 0;
-//	}
-//
-//	public static Slot[] layoutMachineSlots(ArrayList<ItemStack> machine, int numInputs, int numOutputs, final String extraFormat)
-//	{
-//		if(numInputs > 9 || numOutputs > 9)
-//		{
-//			throw new IllegalArgumentException("CraftGuide currently cannot handle GregTech machine recipes with more than 9 inputs or 9 outputs. In the unlikely case that more are needed, please report this to the current developer of CraftGuide.");
-//		}
-//
-//		Slot[] recipeSlots = new Slot[numInputs + numOutputs + 2];
-//
-//		int recipeHOffset = Math.max(3, 30 - 9 * (slotColumns(numInputs) + slotColumns(numOutputs)));
-//
-//		for(int i = 0; i < numInputs; i++)
-//		{
-//			recipeSlots[i] = new ItemSlot(recipeHOffset + slotX(i, numInputs), 3 + slotY(i, numInputs), 16, 16, true).drawOwnBackground();
-//		}
-//
-//		int outputHOffset = recipeHOffset + 20 + slotColumns(numInputs) * 18;
-//
-//		for(int i = 0; i < numOutputs; i++)
-//		{
-//			recipeSlots[numInputs + i] = new ItemSlot(outputHOffset + slotX(i, numOutputs), 3 + slotY(i, numOutputs), 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground();
-//		}
-//
-//		int centreHOffset = recipeHOffset + slotColumns(numInputs) * 18 + 1;
-//
-//		recipeSlots[numInputs + numOutputs + 0] = new ExtraSlot(centreHOffset, 30, 16, 16, machine).clickable().showName().setSlotType(SlotType.MACHINE_SLOT);
-//
-//		if(extraFormat == null)
-//		{
-//			recipeSlots[numInputs + numOutputs + 1] = new EUSlot(centreHOffset, 12);
-//		}
-//		else
-//		{
-//			recipeSlots[numInputs + numOutputs + 1] =
-//				new EUSlot(centreHOffset, 12)
-//				{
-//					@Override
-//					public List<String> getTooltip(int x, int y, Object[] data, int dataIndex)
-//					{
-//						List<String> lines = super.getTooltip(x, y, data, dataIndex);
-//						lines.add(String.format(extraFormat, (((Object[])data[dataIndex])[2])));
-//						return lines;
-//					}
-//				};
-//		}
-//
-//		return recipeSlots;
-//	}
-//
-//	private static int slotX(int i, int numSlots)
-//	{
-//		switch(numSlots)
-//		{
-//		case 0: case 1: case 2:
-//			return 0;
-//
-//		case 3: case 5:
-//			return i == numSlots - 1? 9 : i % 2 == 0? 0 : 18;
-//
-//		case 4: case 6:
-//			return i % 2 == 0? 0 : 18;
-//
-//		case 7:
-//			return i < 2? (i == 0? 6 : 24) : i < 4? (18 * (i - 2)) : (i == 5? 6 : 24);
-//
-//		case 8:
-//			return i < 6? (18 * ((i % 3) - 2)) : (i == 6? 6 : 24);
-//
-//		case 9:
-//			return 18 * ((i % 3) - 2);
-//
-//		default:
-//			throw new IllegalArgumentException();
-//		}
-//	}
-//
-//	private static int slotY(int i, int numSlots)
-//	{
-//		switch(numSlots)
-//		{
-//		case 0: case 1:
-//			return 18;
-//
-//		case 2:
-//			return i * 18 + 9;
-//
-//		case 3: case 4:
-//			return (i / 2) * 18 + 9;
-//
-//		case 5: case 6:
-//			return (i / 2) * 18;
-//
-//		case 7:
-//			return i < 2? 0 : i < 5? 18 : 36;
-//
-//		case 8: case 9:
-//			return (i / 3) * 18;
-//
-//		default:
-//			throw new IllegalArgumentException();
-//		}
-//	}
-//
-//	private static int slotColumns(int numSlots)
-//	{
-//		return numSlots <= 0? 0 : numSlots <= 2? 1 : numSlots <= 6? 2 : 3;
-//	}
-//
-//	private void generatePulverizerRecipes(RecipeGenerator generator, ArrayList<ItemStack> machines, Map<Integer, Object> recipes) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
-//	{
-//		if(machines.size() < 1)
-//			return;
-//
-//		Slot[] recipeSlots = new Slot[] {
-//				new ItemSlot(12, 21, 16, 16, true).drawOwnBackground(),
-//				new ItemSlot(50, 12, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(),
-//				new ChanceSlot(50, 30, 16, 16, true).setSlotType(SlotType.OUTPUT_SLOT).drawOwnBackground(),
-//				new ExtraSlot(31, 30, 16, 16, machines).clickable().showName().setSlotType(SlotType.MACHINE_SLOT),
-//				new EUSlot(31, 12),
-//		};
-//
-//		RecipeTemplate template = generator.createRecipeTemplate(recipeSlots, machines.get(0));
-//
-//		Class<?> recipeClass = Class.forName("gregtech.api.util.GT_PulverizerRecipe");
-//		Method getInput = recipeClass.getMethod("getInput");
-//		Method getPrimaryOutput = recipeClass.getMethod("getPrimaryOutput");
-//		Method getSecondaryOutput = recipeClass.getMethod("getSecondaryOutput");
-//		Method getSecondaryOutputChance = recipeClass.getMethod("getSecondaryOutputChance");
-//		Method getEnergy = recipeClass.getMethod("getEnergy");
-//
-//		for(Object recipe: recipes.values())
-//		{
-//			if(!recipeClass.isInstance(recipe))
-//				continue;
-//
-//			Object input = getInput.invoke(recipe);
-//
-//			ItemStack output = (ItemStack)getPrimaryOutput.invoke(recipe);
-//
-//			Object[] recipeContents = new Object[] {
-//					input,
-//					output,
-//					new Object[]{
-//						getSecondaryOutput.invoke(recipe),
-//						getSecondaryOutputChance.invoke(recipe),
-//					},
-//					machines,
-//					new Object[]{getEnergy.invoke(recipe), 3},
-//			};
-//
-//			generator.addRecipe(template, recipeContents);
-//		}
-//	}
-//
-//	@Override
-//	public Object[] extraMacerators()
-//	{
-//		try
-//		{
-//			Class<? extends Enum<?>> itemList = (Class<? extends Enum<?>>) Class.forName("gregtech.api.enums.ItemList");
-//			return getMachines(itemList, "Macerator").toArray(new ItemStack[0]);
-//		}
-//		catch(IllegalArgumentException | SecurityException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e)
-//		{
-//			CraftGuideLog.log(e, "", true);
-//		}
-//
-//		return null;
-//	}
-//
-//	@Override
-//	public Object[] extraExtractors()
-//	{
-//		try
-//		{
-//			Class<? extends Enum<?>> itemList = (Class<? extends Enum<?>>)Class.forName("gregtech.api.enums.ItemList");
-//			return getMachines(itemList, "Extractor").toArray(new ItemStack[0]);
-//		}
-//		catch(IllegalArgumentException | SecurityException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e)
-//		{
-//			CraftGuideLog.log(e, "", true);
-//		}
-//
-//		return null;
-//	}
-//
-//	@Override
-//	public Object[] extraCompressors()
-//	{
-//		try
-//		{
-//			Class<? extends Enum<?>> itemList = (Class<? extends Enum<?>>)Class.forName("gregtech.api.enums.ItemList");
-//			return getMachines(itemList, "Compressor").toArray(new ItemStack[0]);
-//		}
-//		catch(IllegalArgumentException | SecurityException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e)
-//		{
-//			CraftGuideLog.log(e, "", true);
-//		}
-//
-//		return null;
-//	}
-//}
+package com.dhjcomical.craftguide.recipes;
+
+import com.dhjcomical.craftguide.CraftGuideLog;
+import com.dhjcomical.craftguide.api.*;
+import com.dhjcomical.craftguide.api.slotTypes.*;
+import com.dhjcomical.craftguide.api.slotTypes.ExtraSlot;
+import com.dhjcomical.craftguide.api.slotTypes.ItemSlot;
+import com.dhjcomical.craftguide.api.slotTypes.LiquidSlot;
+import com.dhjcomical.craftguide.api.slotTypes.Slot;
+import net.minecraft.item.ItemStack;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class GregTechRecipes extends CraftGuideAPIObject implements RecipeProvider {
+
+    // 反射缓存
+    private Class<?> recipeMapsClass;
+    private Class<?> recipeMapClass;
+    private Class<?> recipeClass;
+    private Class<?> gtRecipeInputClass;
+    private Class<?> metaTileEntityClass;
+    private Class<?> gregTechAPIClass;
+
+    private Method getRecipeListMethod;
+    private Method isHiddenMethod;
+    private Method getInputsMethod;
+    private Method getFluidInputsMethod;
+    private Method getOutputsMethod;
+    private Method getFluidOutputsMethod;
+    private Method getInputStacksMethod;
+    private Method getInputFluidStackMethod;
+    private Method getEUtMethod;
+    private Method getDurationMethod;
+    private Method getRecipeMapMethod;
+    private Method getStackFormMethod;
+
+    private Field mteRegistryField;
+    private Field unlocalizedNameField;
+
+    private Object[] recipeMapArray;
+
+    public GregTechRecipes() {
+        try {
+            initReflection();
+        } catch (Exception e) {
+            CraftGuideLog.log("Failed to initialize GregTech reflection", true);
+            CraftGuideLog.log(e);
+        }
+    }
+
+    private void initReflection() throws Exception {
+
+        recipeMapsClass = Class.forName("gregtech.api.recipes.RecipeMaps");
+        recipeMapClass = Class.forName("gregtech.api.recipes.RecipeMap");
+        recipeClass = Class.forName("gregtech.api.recipes.Recipe");
+        gtRecipeInputClass = Class.forName("gregtech.api.recipes.ingredients.GTRecipeInput");
+        metaTileEntityClass = Class.forName("gregtech.api.metatileentity.MetaTileEntity");
+        gregTechAPIClass = Class.forName("gregtech.api.GregTechAPI");
+
+        getRecipeListMethod = recipeMapClass.getMethod("getRecipeList");
+        isHiddenMethod = recipeClass.getMethod("isHidden");
+        getInputsMethod = recipeClass.getMethod("getInputs");
+        getFluidInputsMethod = recipeClass.getMethod("getFluidInputs");
+        getOutputsMethod = recipeClass.getMethod("getOutputs");
+        getFluidOutputsMethod = recipeClass.getMethod("getFluidOutputs");
+        getInputStacksMethod = gtRecipeInputClass.getMethod("getInputStacks");
+        getInputFluidStackMethod = gtRecipeInputClass.getMethod("getInputFluidStack");
+        getEUtMethod = recipeClass.getMethod("getEUt");
+        getDurationMethod = recipeClass.getMethod("getDuration");
+        getRecipeMapMethod = metaTileEntityClass.getMethod("getRecipeMap");
+        getStackFormMethod = metaTileEntityClass.getMethod("getStackForm");
+
+        mteRegistryField = gregTechAPIClass.getField("MTE_REGISTRY");
+        unlocalizedNameField = recipeMapClass.getField("unlocalizedName");
+
+        recipeMapArray = new Object[]{
+                getRecipeMapField("MACERATOR_RECIPES"),
+                getRecipeMapField("EXTRACTOR_RECIPES"),
+                getRecipeMapField("COMPRESSOR_RECIPES"),
+                getRecipeMapField("ALLOY_SMELTER_RECIPES"),
+                getRecipeMapField("ASSEMBLER_RECIPES"),
+                getRecipeMapField("BENDER_RECIPES"),
+                getRecipeMapField("CANNER_RECIPES"),
+                getRecipeMapField("CIRCUIT_ASSEMBLER_RECIPES"),
+                getRecipeMapField("ELECTROLYZER_RECIPES"),
+                getRecipeMapField("CENTRIFUGE_RECIPES"),
+                getRecipeMapField("WIREMILL_RECIPES"),
+                getRecipeMapField("LATHE_RECIPES"),
+                getRecipeMapField("FLUID_HEATER_RECIPES"),
+                getRecipeMapField("DISTILLERY_RECIPES"),
+                getRecipeMapField("CHEMICAL_RECIPES"),
+                getRecipeMapField("CUTTER_RECIPES"),
+                getRecipeMapField("MIXER_RECIPES"),
+                getRecipeMapField("FORGE_HAMMER_RECIPES"),
+        };
+    }
+
+    private Object getRecipeMapField(String fieldName) {
+        try {
+            Field field = recipeMapsClass.getField(fieldName);
+            return field.get(null);
+        } catch (Exception e) {
+            CraftGuideLog.log("Failed to get RecipeMap field: " + fieldName);
+            return null;
+        }
+    }
+
+    @Override
+    public void generateRecipes(RecipeGenerator generator) {
+        if (recipeMapArray == null) return;
+
+        for (Object recipeMap : recipeMapArray) {
+            if (recipeMap == null) continue;
+
+            try {
+                Collection<?> recipeList = (Collection<?>) getRecipeListMethod.invoke(recipeMap);
+                if (recipeList == null || recipeList.isEmpty()) continue;
+
+                addGtMachineRecipes(generator, recipeMap, recipeList);
+            } catch (Exception e) {
+                try {
+                    String mapName = (String) unlocalizedNameField.get(recipeMap);
+                    CraftGuideLog.log("Failed to generate recipes for GregTech machine: " + mapName);
+                } catch (Exception ex) {
+                    CraftGuideLog.log("Failed to generate recipes for GregTech machine: UNKNOWN");
+                }
+                CraftGuideLog.log(e);
+            }
+        }
+    }
+
+    private void addGtMachineRecipes(RecipeGenerator generator, Object recipeMap, Collection<?> recipeList) throws Exception {
+        ItemStack machineStack = getMachineStackFor(recipeMap);
+
+        if (machineStack.isEmpty()) {
+            // 尝试从配方输出获取
+            for (Object recipe : recipeList) {
+                List<?> outputs = (List<?>) getOutputsMethod.invoke(recipe);
+                if (outputs != null && !outputs.isEmpty()) {
+                    for (Object output : outputs) {
+                        if (output instanceof ItemStack && !((ItemStack) output).isEmpty()) {
+                            machineStack = (ItemStack) output;
+                            break;
+                        }
+                    }
+                    if (!machineStack.isEmpty()) break;
+                }
+            }
+
+            if (machineStack.isEmpty()) {
+                String mapName = (String) unlocalizedNameField.get(recipeMap);
+                CraftGuideLog.log("No machine stack found for: " + mapName);
+                return;
+            }
+        }
+
+        for (Object recipe : recipeList) {
+            try {
+                boolean isHidden = (boolean) isHiddenMethod.invoke(recipe);
+                if (isHidden) continue;
+
+                List<?> itemInputs = (List<?>) getInputsMethod.invoke(recipe);
+                List<?> fluidInputs = (List<?>) getFluidInputsMethod.invoke(recipe);
+                List<?> itemOutputs = (List<?>) getOutputsMethod.invoke(recipe);
+                List<?> fluidOutputs = (List<?>) getFluidOutputsMethod.invoke(recipe);
+
+                if ((itemInputs == null || itemInputs.isEmpty()) &&
+                        (fluidInputs == null || fluidInputs.isEmpty())) {
+                    continue;
+                }
+
+                addSingleRecipe(generator, machineStack, recipe, itemInputs, fluidInputs, itemOutputs, fluidOutputs);
+            } catch (Exception e) {
+                String mapName = (String) unlocalizedNameField.get(recipeMap);
+                CraftGuideLog.log("Failed to add recipe for machine: " + mapName);
+                CraftGuideLog.log(e);
+            }
+        }
+    }
+
+    private void addSingleRecipe(RecipeGenerator generator, ItemStack machineStack, Object recipe,
+                                 List<?> itemInputs, List<?> fluidInputs,
+                                 List<?> itemOutputs, List<?> fluidOutputs) throws Exception {
+
+        List<Slot> slots = new ArrayList<>();
+        int x = 3;
+        int yOffset = 3;
+
+        if (itemInputs != null && !itemInputs.isEmpty()) {
+            for (int i = 0; i < itemInputs.size(); i++) {
+                slots.add(new ItemSlot(x, yOffset + i * 18, 16, 16));
+            }
+            x += 18;
+        }
+
+        if (fluidInputs != null && !fluidInputs.isEmpty()) {
+            for (int i = 0; i < fluidInputs.size(); i++) {
+                slots.add(new LiquidSlot(x, yOffset + i * 18));
+            }
+            x += 18;
+        }
+
+        if (x == 3) x = 12;
+
+        ExtraSlot machineSlot = new ExtraSlot(x, yOffset + 18, 16, 16, machineStack);
+        machineSlot.clickable();
+        machineSlot.showName();
+        slots.add(machineSlot);
+
+        slots.add(new TextSlot(x - 8, yOffset + 36));
+        slots.add(new TextSlot(x - 8, yOffset + 45));
+
+        x += 22;
+
+        if (itemOutputs != null && !itemOutputs.isEmpty()) {
+            for (int i = 0; i < itemOutputs.size(); i++) {
+                slots.add(new ItemSlot(x, yOffset + i * 18, 16, 16, true));
+            }
+            x += 18;
+        }
+
+        if (fluidOutputs != null && !fluidOutputs.isEmpty()) {
+            for (int i = 0; i < fluidOutputs.size(); i++) {
+                slots.add(new LiquidSlot(x, yOffset + i * 18));
+            }
+            x += 18;
+        }
+
+        int maxInputRows = Math.max(
+                itemInputs != null ? itemInputs.size() : 0,
+                fluidInputs != null ? fluidInputs.size() : 0
+        );
+        int maxOutputRows = Math.max(
+                itemOutputs != null ? itemOutputs.size() : 0,
+                fluidOutputs != null ? fluidOutputs.size() : 0
+        );
+        int height = Math.max(maxInputRows, maxOutputRows) * 18 + 6;
+        height = Math.max(height, 60);
+
+        RecipeTemplate template = generator.createRecipeTemplate(slots.toArray(new Slot[0]), machineStack);
+        template.setSize(x + 3, height);
+
+        Object[] data = new Object[slots.size()];
+        int dataIndex = 0;
+
+        if (itemInputs != null) {
+            for (Object gtInput : itemInputs) {
+                data[dataIndex++] = getInputStacksMethod.invoke(gtInput);
+            }
+        }
+        if (fluidInputs != null) {
+            for (Object gtInput : fluidInputs) {
+                data[dataIndex++] = getInputFluidStackMethod.invoke(gtInput);
+            }
+        }
+
+        data[dataIndex++] = null;
+
+        int eut = (int) getEUtMethod.invoke(recipe);
+        int duration = (int) getDurationMethod.invoke(recipe);
+        data[dataIndex++] = String.format("%d EU/t", eut);
+        data[dataIndex++] = String.format("%.2fs", duration / 20.0);
+
+        if (itemOutputs != null) {
+            for (Object stack : itemOutputs) {
+                data[dataIndex++] = stack;
+            }
+        }
+        if (fluidOutputs != null) {
+            for (Object fluid : fluidOutputs) {
+                data[dataIndex++] = fluid;
+            }
+        }
+
+        generator.addRecipe(template, data);
+    }
+
+    private ItemStack getMachineStackFor(Object recipeMap) {
+        try {
+            Collection<?> mteRegistry = (Collection<?>) mteRegistryField.get(null);
+            if (mteRegistry == null) return ItemStack.EMPTY;
+
+            for (Object metaTileEntity : mteRegistry) {
+                if (metaTileEntity == null) continue;
+
+                Object entityRecipeMap = getRecipeMapMethod.invoke(metaTileEntity);
+                if (entityRecipeMap == recipeMap) {
+                    ItemStack stack = (ItemStack) getStackFormMethod.invoke(metaTileEntity);
+                    if (stack != null && !stack.isEmpty()) {
+                        return stack;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            try {
+                String mapName = (String) unlocalizedNameField.get(recipeMap);
+                CraftGuideLog.log("Error getting machine stack for: " + mapName);
+            } catch (Exception ex) {
+                CraftGuideLog.log("Error getting machine stack for: UNKNOWN");
+            }
+            CraftGuideLog.log(e);
+        }
+        return ItemStack.EMPTY;
+    }
+}

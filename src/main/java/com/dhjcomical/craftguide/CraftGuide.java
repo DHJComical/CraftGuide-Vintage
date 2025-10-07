@@ -94,7 +94,17 @@ public class CraftGuide
             }
         }
 
-        // 3. Initialize network channels
+//        if (loaderSide.isModLoaded("gregtech")) {
+//            try {
+//                Object provider = Class.forName("com.dhjcomical.craftguide.recipes.GregTechRecipes").newInstance();
+//                if (provider instanceof RecipeProvider) {
+//                    RECIPE_PROVIDERS.add((RecipeProvider) provider);
+//                }
+//            } catch (Exception e) {
+//                CraftGuideLog.log("Failed to load recipe provider for GregTech", true);
+//            }
+//        }
+
         side.initNetworkChannels();
     }
 
