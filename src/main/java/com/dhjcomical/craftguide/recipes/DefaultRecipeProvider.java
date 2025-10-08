@@ -14,7 +14,6 @@ import com.dhjcomical.craftguide.CraftGuide;
 import com.dhjcomical.craftguide.CraftGuideLog;
 import com.dhjcomical.craftguide.DefaultRecipeTemplate;
 import com.dhjcomical.craftguide.RecipeGeneratorImplementation;
-import com.dhjcomical.craftguide.api.CraftGuideAPIObject;
 import com.dhjcomical.craftguide.api.slotTypes.ItemSlot;
 import com.dhjcomical.craftguide.api.RecipeGenerator;
 import com.dhjcomical.craftguide.api.RecipeProvider;
@@ -29,7 +28,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-public class DefaultRecipeProvider extends CraftGuideAPIObject implements RecipeProvider, StackInfoSource
+public class DefaultRecipeProvider implements RecipeProvider, StackInfoSource
 {
     private static final boolean DEBUG_MODE = false;
 

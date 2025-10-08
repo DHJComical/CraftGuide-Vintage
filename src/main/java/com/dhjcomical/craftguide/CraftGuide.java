@@ -7,16 +7,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList; // <-- IMPORT
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List; // <-- IMPORT
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.dhjcomical.craftguide.api.RecipeProvider; // <-- IMPORT
-import com.dhjcomical.craftguide.recipes.*; // <-- IMPORT all recipe providers
+import com.dhjcomical.craftguide.api.RecipeProvider;
+import com.dhjcomical.craftguide.recipes.*;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -46,7 +46,6 @@ public class CraftGuide
     public static boolean insertBetterWithRenewablesRecipes = false;
     public static boolean enableItemRecipe = true;
     public static boolean rightClickClearText = true;
-    public static boolean betterWithRenewablesDetected = false;
     public static boolean needsRecipeRefresh = false;
     public static boolean ae2Workaround = true;
     public static boolean useWorkerThread = true;
@@ -66,48 +65,32 @@ public class CraftGuide
         side.initKeybind();
     }
 
-    public void init()
-    {
-        // 1. Manually add all recipe providers to our public, static list
+    public void init() {
+        CraftGuideLog.log("Initializing CraftGuide recipe providers...");
+
         RECIPE_PROVIDERS.add(new DefaultRecipeProvider());
         RECIPE_PROVIDERS.add(new BrewingRecipes());
         RECIPE_PROVIDERS.add(new GrassSeedDrops());
 
-        // 2. Conditionally add providers for other mods
         if (loaderSide.isModLoaded("ic2")) {
             try {
                 RECIPE_PROVIDERS.add(new IC2ExperimentalRecipes());
             } catch (Throwable e) {
-                CraftGuideLog.log("Failed to initialize IC2 recipe provider. IC2 recipes may not be available.");
-                CraftGuideLog.log(e);
-            }
-        }
-
-        if (loaderSide.isModLoaded("buildcraftfactory")) {
-            try {
-                Object provider = Class.forName("com.dhjcomical.craftguide.recipes.BuildCraftRecipes").newInstance();
-                if (provider instanceof RecipeProvider) {
-                    RECIPE_PROVIDERS.add((RecipeProvider) provider);
-                }
-            } catch (Exception e) {
-                CraftGuideLog.log("Failed to load recipe provider for BuildCraft", true);
+                CraftGuideLog.log(e, "Failed to initialize IC2 recipe provider.", true);
             }
         }
 
 //        if (loaderSide.isModLoaded("gregtech")) {
 //            try {
-//                Object provider = Class.forName("com.dhjcomical.craftguide.recipes.GregTechRecipes").newInstance();
-//                if (provider instanceof RecipeProvider) {
-//                    RECIPE_PROVIDERS.add((RecipeProvider) provider);
-//                }
-//            } catch (Exception e) {
-//                CraftGuideLog.log("Failed to load recipe provider for GregTech", true);
+//                RECIPE_PROVIDERS.add(new GregTechRecipes());
+//            } catch (Throwable e) {
+//                CraftGuideLog.log(e, "Failed to initialize GregTech recipe provider.", true);
 //            }
 //        }
 
+        CraftGuideLog.log("Finished initializing providers. Total providers: " + RECIPE_PROVIDERS.size());
         side.initNetworkChannels();
     }
-
 
     private void initForgeExtensions()
     {

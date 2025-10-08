@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class GregTechRecipes extends CraftGuideAPIObject implements RecipeProvider {
+public class GregTechRecipes implements RecipeProvider {
 
     // 反射缓存
     private Class<?> recipeMapsClass;
