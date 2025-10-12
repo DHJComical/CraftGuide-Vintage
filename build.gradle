@@ -226,11 +226,6 @@ jar {
         if (propertyBool('use_access_transformer')) {
             attribute_map['FMLAT'] = propertyString('access_transformer_locations')
         }
-
-        if (propertyBool('use_mixins')) {
-            attribute_map['MixinConfigs'] = propertyStringList('mixin_configs').collect { it + '.json' }.join(' ')
-        }
-
         attributes(attribute_map)
     }
     from(provider{ configurations.embed.collect {it.isDirectory() ? it : zipTree(it)} })
