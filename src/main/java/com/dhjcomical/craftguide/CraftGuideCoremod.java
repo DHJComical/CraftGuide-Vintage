@@ -1,25 +1,19 @@
 package com.dhjcomical.craftguide;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.spongepowered.asm.launch.MixinBootstrap;
-import org.spongepowered.asm.mixin.Mixins;
+import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-@IFMLLoadingPlugin.Name("CraftGuideCoremod")
+@IFMLLoadingPlugin.Name("craftguide")
 @IFMLLoadingPlugin.MCVersion("1.12.2")
-public class CraftGuideCoremod implements IFMLLoadingPlugin {
-
-    public CraftGuideCoremod() {
-
-        CraftGuideLog.log("CraftGuide Coremod is loading. Initializing Mixins...");
-
-        MixinBootstrap.init();
-
-        Mixins.addConfiguration("mixins.craftguide.json");
-
-        CraftGuideLog.log("Main Mixin configuration added.");
+public class CraftGuideCoremod implements IFMLLoadingPlugin, IEarlyMixinLoader {
+    @Override
+    public List<String> getMixinConfigs() {
+        return Collections.singletonList("mixins.craftguide.early.json");
     }
 
     @Override

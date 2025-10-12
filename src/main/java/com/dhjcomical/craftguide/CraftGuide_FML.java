@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = "craftguide", name = "CraftGuide", version = "1.7.0")
+@Mod(modid = "craftguide", name = "CraftGuide", version = "1.7.0", dependencies = "required-after:mixinbooter@[8.0,)")
 public class CraftGuide_FML implements CraftGuideLoaderSide {
 
     public static Logger logger;
