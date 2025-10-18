@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Level;
@@ -64,6 +65,12 @@ public class CraftGuide_FML implements CraftGuideLoaderSide {
                 CraftGuideLog.log("Failed to build theme: " + ThemeManager.currentThemeName);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        CraftGuideLog.log("Player logged in. Marking recipes for reload on next GUI open.");
+        RecipeCache.recipesNeedReload = true;
     }
 
 

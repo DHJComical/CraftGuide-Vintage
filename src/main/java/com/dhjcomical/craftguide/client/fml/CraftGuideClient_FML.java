@@ -1,5 +1,6 @@
 package com.dhjcomical.craftguide.client.fml;
 
+import com.dhjcomical.craftguide.*;
 import net.minecraft.client.renderer.BufferBuilder;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -15,10 +16,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import com.dhjcomical.craftguide.CommonUtilities;
-import com.dhjcomical.craftguide.CraftGuide;
-import com.dhjcomical.craftguide.CraftGuideLog;
-import com.dhjcomical.craftguide.GuiCraftGuide;
 import com.dhjcomical.craftguide.client.CraftGuideClient;
 
 public class CraftGuideClient_FML extends CraftGuideClient
@@ -92,11 +89,14 @@ public class CraftGuideClient_FML extends CraftGuideClient
         }
 	}
 
-	@Override
-	public void openGUI(EntityPlayer player)
-	{
-		FMLClientHandler.instance().displayGuiScreen(player, GuiCraftGuide.getInstance());
-	}
+    @Override
+    public void openGUI(EntityPlayer player) {
+        if (RecipeCache.recipesNeedReload) {
+            CraftGuideLog.log("GUI is opening and recipes need reload. Triggering cache reset..."); // 添加日志
+            GuiCraftGuide.getInstance().getRecipeCache().reset();
+        }
+        FMLClientHandler.instance().displayGuiScreen(player, GuiCraftGuide.getInstance());
+    }
 
 	boolean failed = false;
 

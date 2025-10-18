@@ -534,7 +534,7 @@ public class GuiCraftGuide extends Gui
 
 	public void reloadRecipes()
 	{
-		recipeCache.reset();
+		recipeCache.forceReset();
 	}
 
 	public static void onTickInGame(float f, Minecraft minecraft)
@@ -559,19 +559,18 @@ public class GuiCraftGuide extends Gui
 		super.onGuiClosed();
 	}
 
-	@Override
-	public void initGui()
-	{
-		super.initGui();
-		Keyboard.enableRepeatEvents(true);
+    @Override
+    public void initGui()
+    {
+        super.initGui();
+        Keyboard.enableRepeatEvents(true);
 
-		if(CraftGuide.needsRecipeRefresh)
-		{
-			reloadRecipes();
-		}
-
-		TranslatedTextSource.reloadAll();
-	}
+        if(RecipeCache.recipesNeedReload)
+        {
+            recipeCache.reset();
+        }
+        TranslatedTextSource.reloadAll();
+    }
 
 	public RecipeCache getRecipeCache()
 	{

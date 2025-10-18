@@ -36,6 +36,7 @@ public class RecipeCache
     private SortedSet<ItemType> allItems = new TreeSet<>();
     private boolean recipesLoaded = false;
     private static boolean recipesAreLoading = false;
+    public static boolean recipesNeedReload = true;
 
     public interface Task { void run(); }
     private static Task nextTask = null;
@@ -74,8 +75,13 @@ public class RecipeCache
     }
 
     public synchronized void reset() {
-        CraftGuide.needsRecipeRefresh = false;
+        if (recipesAreLoading || (recipesLoaded && !recipesNeedReload)) {
+            return;
+        }
+
         recipesAreLoading = true;
+        recipesNeedReload = false;
+
         runTask(() -> {
             try {
                 CraftGuideLog.log("Starting recipe reload task...");
@@ -108,6 +114,7 @@ public class RecipeCache
                 listeners.forEach(listener -> listener.onReset(this));
                 CraftGuideLog.log("Recipe reload task finished successfully.");
             } catch(Throwable t) {
+                recipesNeedReload = true;
                 CraftGuideLog.log(t, "Critical error during recipe reload task!", true);
             } finally {
                 recipesAreLoading = false;
@@ -115,8 +122,22 @@ public class RecipeCache
         });
     }
 
+    public synchronized void forceReset() {
+
+        if (recipesAreLoading) {
+            CraftGuideLog.log("Reload requested, but a reload task is already running.");
+            return;
+        }
+
+        CraftGuideLog.log("Force-reload requested by user. Bypassing lazy-load check.");
+
+        recipesNeedReload = true;
+        reset();
+    }
+
     private static SortedSet<ItemType> generateAllItemList(Map<ItemType, List<CraftGuideRecipe>> craftResults) {
         SortedSet<ItemType> allItems = new TreeSet<>();
+
         Map<String, ItemType> oreDictCache = new HashMap<>();
 
         for (List<CraftGuideRecipe> recipeList : craftResults.values()) {
