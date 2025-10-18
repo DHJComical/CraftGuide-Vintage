@@ -1,36 +1,60 @@
 package com.dhjcomical.craftguide.recipes;
 
+import com.dhjcomical.craftguide.CraftGuideLog;
+import com.dhjcomical.craftguide.api.StackInfoSource;
+import ic2.api.recipe.IMachineRecipeManager;
 import ic2.api.recipe.IRecipeInput;
-import ic2.api.recipe.MachineRecipeResult;
+import ic2.api.recipe.MachineRecipe;
 import ic2.api.recipe.Recipes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import com.dhjcomical.craftguide.api.StackInfoSource;
+import net.minecraftforge.fml.common.Loader;
+
+import java.lang.Iterable;
 
 public class IC2ExperimentalAmplifiers implements StackInfoSource {
 
     @Override
     public String getInfo(ItemStack itemStack) {
-        MachineRecipeResult<IRecipeInput, Integer, ItemStack> result = Recipes.matterAmplifier.apply(itemStack, false);
-
-        int value = getValue(result);
-
-        if (value != 0) {
-            return "\u00a77Massfab amplifier value: " + value;
-        } else {
+        if (itemStack == null || itemStack.isEmpty()) {
             return null;
         }
-    }
 
-    private static int getValue(MachineRecipeResult<IRecipeInput, Integer, ItemStack> result) {
-        if (result != null && result.getRecipe() != null) {
-            NBTTagCompound metadata = result.getRecipe().getMetaData();
-
-            if (metadata != null) {
-                return metadata.getInteger("amplification");
-            }
+        if (!Loader.isModLoaded("ic2")) {
+            return null;
         }
 
-        return 0;
+        try {
+            IMachineRecipeManager<IRecipeInput, Integer, ItemStack> matterAmplifierRecipes = Recipes.matterAmplifier;
+
+            if (matterAmplifierRecipes == null) {
+                return null;
+            }
+
+            Iterable<? extends MachineRecipe<IRecipeInput, Integer>> recipes = matterAmplifierRecipes.getRecipes();
+
+            for (MachineRecipe<IRecipeInput, Integer> recipe : recipes) {
+
+                IRecipeInput input = recipe.getInput();
+
+                if (input != null && input.matches(itemStack)) {
+                    NBTTagCompound metadata = recipe.getMetaData();
+
+                    if (metadata != null && metadata.hasKey("amplification")) {
+                        int value = metadata.getInteger("amplification");
+                        if (value != 0) {
+                            return "\u00a7eMassfab amplifier: " + value;
+                        }
+                    }
+
+                    return null;
+                }
+            }
+
+        } catch (Exception e) {
+            CraftGuideLog.log(e, "Caught an unexpected exception from IC2 API while checking Massfab amplifier recipes for item: " + itemStack.getTranslationKey(), false);
+        }
+
+        return null;
     }
 }
