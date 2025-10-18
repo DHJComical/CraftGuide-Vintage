@@ -13,7 +13,7 @@ import com.dhjcomical.craftguide.api.slotTypes.*;
 
 import java.util.*;
 
-public class IC2ExperimentalRecipes extends CraftGuideAPIObject implements RecipeProvider {
+public class IC2ExperimentalRecipes implements RecipeProvider {
 
     public IC2ExperimentalRecipes() {
         StackInfo.addSource(new IC2GeneratorFuel());

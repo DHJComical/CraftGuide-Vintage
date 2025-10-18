@@ -1,0 +1,15 @@
+{
+  "package": "com.dhjcomical.craftguide.mixin",
+  "required": true,
+  "refmap": "mixins.craftguide.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ic2exp.IC2AdvRecipeAccessor",
+    "ic2exp.IC2AdvShapelessRecipeAccessor",
+    "ic2classic.IC2ClassicAdvRecipeAccessor"
+  ],
+  "server": [],
+  "client": []
+}
